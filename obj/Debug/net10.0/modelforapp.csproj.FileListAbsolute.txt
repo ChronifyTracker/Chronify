@@ -1,0 +1,15 @@
+D:\c# hw\modelforapp\obj\Debug\net10.0\modelforapp.GeneratedMSBuildEditorConfig.editorconfig
+D:\c# hw\modelforapp\obj\Debug\net10.0\modelforapp.AssemblyInfoInputs.cache
+D:\c# hw\modelforapp\obj\Debug\net10.0\modelforapp.AssemblyInfo.cs
+D:\c# hw\modelforapp\obj\Debug\net10.0\modelforapp.csproj.CoreCompileInputs.cache
+D:\c# hw\modelforapp\obj\Debug\net10.0\modelforapp.sourcelink.json
+D:\c# hw\modelforapp\bin\Debug\net10.0\modelforapp.exe
+D:\c# hw\modelforapp\bin\Debug\net10.0\modelforapp.deps.json
+D:\c# hw\modelforapp\bin\Debug\net10.0\modelforapp.runtimeconfig.json
+D:\c# hw\modelforapp\bin\Debug\net10.0\modelforapp.dll
+D:\c# hw\modelforapp\bin\Debug\net10.0\modelforapp.pdb
+D:\c# hw\modelforapp\obj\Debug\net10.0\modelforapp.dll
+D:\c# hw\modelforapp\obj\Debug\net10.0\refint\modelforapp.dll
+D:\c# hw\modelforapp\obj\Debug\net10.0\modelforapp.pdb
+D:\c# hw\modelforapp\obj\Debug\net10.0\modelforapp.genruntimeconfig.cache
+D:\c# hw\modelforapp\obj\Debug\net10.0\ref\modelforapp.dll
