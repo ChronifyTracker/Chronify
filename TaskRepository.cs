@@ -16,7 +16,7 @@ namespace Chronify
 
         public List<TaskItem> GetAll()
         {
-            return _tasks.ToList();
+            return [.. _tasks];
         }
     }
 }

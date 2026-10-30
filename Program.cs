@@ -6,18 +6,18 @@ ITaskRepository repository = new TaskRepository();
 
 // 2. Создаём и добавляем пару задач
 var task1 = new TaskItem(
-    "Сдать лабораторную", 
-    "Подготовить отчет и загрузить в систему", 
-    DateTime.Now.AddDays(2), 
-    TaskPriority.High, 
+    "Сдать лабораторную",
+    "Подготовить отчет и загрузить в систему",
+    DateTime.Now.AddDays(2),
+    TaskPriority.High,
     TaskStatus.InProgress
 );
 
 var task2 = new TaskItem(
-    "Купить кофе", 
-    "Зерновой для кофемашины", 
-    DateTime.Now.AddHours(3), 
-    TaskPriority.Low, 
+    "Купить кофе",
+    "Зерновой для кофемашины",
+    null,
+    TaskPriority.Low,
     TaskStatus.InProgress
 );
 
@@ -29,7 +29,8 @@ Console.WriteLine($"Всего задач в трекере: {repository.GetAll(
 
 foreach (var task in repository.GetAll())
 {
-    Console.WriteLine($"[{task.Priority}] {task.Title} (Осталось: {task.TimeRemaining.Hours} ч.)");
+    var hoursRemaining = task.TimeRemaining?.Hours.ToString() ?? "Без дедлайна";
+    Console.WriteLine($"[{task.Priority}] {task.Title} (Осталось: {hoursRemaining})");
 }
 
 // 4. Проверяем работу завершения задачи
