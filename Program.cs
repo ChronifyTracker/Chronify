@@ -1,16 +1,19 @@
-﻿using Chronify;
-using TaskStatus = Chronify.TaskStatus; // Чтобы C# не путал с системным System.Threading.Tasks.TaskStatus
+using Chronify;
+using TaskStatus = Chronify.TaskStatus;
 
-// 1. Создаём репозиторий через интерфейс!
-ITaskRepository repository = new TaskRepository();
+ITaskRepository repository = new SqliteTaskRepository();
 
-// 2. Создаём и добавляем пару задач
+var university = new Category("Университет", "#4A90E2");
+var personal = new Category("Личное", "#50E3C2");
+
 var task1 = new TaskItem(
     "Сдать лабораторную", 
     "Подготовить отчет и загрузить в систему", 
-    DateTime.Now.AddDays(2), 
+    DateTime.Now.AddDays(3), 
     TaskPriority.High, 
-    TaskStatus.InProgress
+    TaskStatus.InProgress,
+    estimatedMinutes: 120,
+    category: university
 );
 
 var task2 = new TaskItem(
@@ -18,20 +21,18 @@ var task2 = new TaskItem(
     "Зерновой для кофемашины", 
     DateTime.Now.AddHours(3), 
     TaskPriority.Low, 
-    TaskStatus.InProgress
+    TaskStatus.InProgress,
+    estimatedMinutes: 20,
+    category: personal
 );
 
 repository.Add(task1);
 repository.Add(task2);
 
-// 3. Проверяем получение всех задач
-Console.WriteLine($"Всего задач в трекере: {repository.GetAll().Count}");
+Console.WriteLine($"Всего задач в базе: {repository.GetAll().Count}");
 
 foreach (var task in repository.GetAll())
 {
-    Console.WriteLine($"[{task.Priority}] {task.Title} (Осталось: {task.TimeRemaining.Hours} ч.)");
+    var categoryName = task.Category != null ? task.Category.Name : "Без категории";
+    Console.WriteLine($"[{task.Priority}] {task.Title} | Категория: {categoryName} | Оценка: {task.EstimatedMinutes} мин.");
 }
-
-// 4. Проверяем работу завершения задачи
-task1.CompleteTask();
-Console.WriteLine($"\nСтатус первой задачи после завершения: {task1.Status}");

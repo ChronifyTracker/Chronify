@@ -2,7 +2,8 @@ namespace Chronify
 {
     public enum TaskStatus
     {
-        Done = 1, // Сделано
-        InProgress = 2, // В процессе
+        New = 0,
+        InProgress = 1,
+        Done = 2
     }
 }
