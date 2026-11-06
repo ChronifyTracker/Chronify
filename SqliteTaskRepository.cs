@@ -24,24 +24,49 @@ namespace Chronify
                 .FirstOrDefault(t => t.Id == taskId);
         }
 
-        public List<TaskItem> GetAll()
+        public List<TaskItem> GetAll(TaskQuery? query = null)
         {
-            return _context.Tasks
-                .Include(t => t.Category)
-                .ToList();
-        }
+            IQueryable<TaskItem> tasks = _context.Tasks
+                .Include(t => t.Category);
 
-        public List<TaskItem> Search(string query)
-        {
-            if (string.IsNullOrWhiteSpace(query))
-                return GetAll();
+            if (query?.Priority is TaskPriority priority)
+                tasks = tasks.Where(t => t.Priority == priority);
 
-            query = query.Trim();
+            if (query?.CategoryId is Guid categoryId)
+                tasks = tasks.Where(t => t.CategoryId == categoryId);
 
-            // На маленьких размерах пока сойдет
-            return GetAll()
-                .Where(t => t.Title.Contains(query, StringComparison.OrdinalIgnoreCase)
-                    || t.Description.Contains(query, StringComparison.OrdinalIgnoreCase))
+            if (query?.Status is TaskStatus status)
+                tasks = tasks.Where(t => t.Status == status);
+
+            if (query?.SortBy is TaskSortBy sortBy)
+            {
+                var sortDescending = query.SortDescending;
+                tasks = sortBy switch
+                {
+                    TaskSortBy.DueDate => sortDescending
+                        ? tasks.OrderByDescending(t => t.DueDate)
+                        : tasks.OrderBy(t => t.DueDate),
+                    TaskSortBy.Priority => sortDescending
+                        ? tasks.OrderByDescending(t => t.Priority)
+                        : tasks.OrderBy(t => t.Priority),
+                    TaskSortBy.CreatedAt => sortDescending
+                        ? tasks.OrderByDescending(t => t.CreatedAt)
+                        : tasks.OrderBy(t => t.CreatedAt),
+                    TaskSortBy.Title => sortDescending
+                        ? tasks.OrderByDescending(t => t.Title)
+                        : tasks.OrderBy(t => t.Title),
+                    _ => tasks
+                };
+            }
+
+            var results = tasks.ToList();
+            if (string.IsNullOrWhiteSpace(query?.Search))
+                return results;
+
+            var searchQuery = query.Search.Trim();
+            return results
+                .Where(t => t.Title.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)
+                    || t.Description.Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }
 

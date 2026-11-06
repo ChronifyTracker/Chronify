@@ -14,22 +14,48 @@ namespace Chronify
             return _tasks.FirstOrDefault(t => t.Id == taskId);
         }
 
-        public List<TaskItem> GetAll()
+        public List<TaskItem> GetAll(TaskQuery? query = null)
         {
-            return _tasks.ToList();
-        }
+            IEnumerable<TaskItem> tasks = _tasks;
 
-        public List<TaskItem> Search(string query)
-        {
-            if (string.IsNullOrWhiteSpace(query))
-                return GetAll();
+            if (!string.IsNullOrWhiteSpace(query?.Search))
+            {
+                var searchQuery = query.Search.Trim();
+                tasks = tasks.Where(t => t.Title.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)
+                    || t.Description.Contains(searchQuery, StringComparison.OrdinalIgnoreCase));
+            }
 
-            query = query.Trim();
+            if (query?.Priority is TaskPriority priority)
+                tasks = tasks.Where(t => t.Priority == priority);
 
-            return _tasks
-                .Where(t => t.Title.Contains(query, StringComparison.OrdinalIgnoreCase)
-                    || t.Description.Contains(query, StringComparison.OrdinalIgnoreCase))
-                .ToList();
+            if (query?.CategoryId is Guid categoryId)
+                tasks = tasks.Where(t => t.CategoryId == categoryId);
+
+            if (query?.Status is TaskStatus status)
+                tasks = tasks.Where(t => t.Status == status);
+
+            if (query?.SortBy is TaskSortBy sortBy)
+            {
+                var sortDescending = query.SortDescending;
+                tasks = sortBy switch
+                {
+                    TaskSortBy.DueDate => sortDescending
+                        ? tasks.OrderByDescending(t => t.DueDate)
+                        : tasks.OrderBy(t => t.DueDate),
+                    TaskSortBy.Priority => sortDescending
+                        ? tasks.OrderByDescending(t => t.Priority)
+                        : tasks.OrderBy(t => t.Priority),
+                    TaskSortBy.CreatedAt => sortDescending
+                        ? tasks.OrderByDescending(t => t.CreatedAt)
+                        : tasks.OrderBy(t => t.CreatedAt),
+                    TaskSortBy.Title => sortDescending
+                        ? tasks.OrderByDescending(t => t.Title)
+                        : tasks.OrderBy(t => t.Title),
+                    _ => tasks
+                };
+            }
+
+            return tasks.ToList();
         }
 
         public bool Update(TaskItem task)
