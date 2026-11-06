@@ -19,6 +19,19 @@ namespace Chronify
             return _tasks.ToList();
         }
 
+        public List<TaskItem> Search(string query)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+                return GetAll();
+
+            query = query.Trim();
+
+            return _tasks
+                .Where(t => t.Title.Contains(query, StringComparison.OrdinalIgnoreCase)
+                    || t.Description.Contains(query, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+
         public bool Update(TaskItem task)
         {
             var existingTask = GetById(task.Id);

@@ -31,6 +31,20 @@ namespace Chronify
                 .ToList();
         }
 
+        public List<TaskItem> Search(string query)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+                return GetAll();
+
+            query = query.Trim();
+
+            // На маленьких размерах пока сойдет
+            return GetAll()
+                .Where(t => t.Title.Contains(query, StringComparison.OrdinalIgnoreCase)
+                    || t.Description.Contains(query, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+
         public bool Update(TaskItem task)
         {
             if (!_context.Tasks.Any(t => t.Id == task.Id))
