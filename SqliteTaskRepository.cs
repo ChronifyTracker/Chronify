@@ -38,20 +38,14 @@ namespace Chronify
             if (filter?.Status is TaskStatus status)
                 tasks = tasks.Where(t => t.Status == status);
 
-            return tasks.ToList();
-        }
+            var filteredTasks = tasks.ToList();
+            if (string.IsNullOrWhiteSpace(filter?.SearchQuery))
+                return filteredTasks;
 
-        public List<TaskItem> Search(string query)
-        {
-            if (string.IsNullOrWhiteSpace(query))
-                return GetAll();
-
-            query = query.Trim();
-
-            // На маленьких размерах пока сойдет
-            return GetAll()
-                .Where(t => t.Title.Contains(query, StringComparison.OrdinalIgnoreCase)
-                    || t.Description.Contains(query, StringComparison.OrdinalIgnoreCase))
+            var searchQuery = filter.SearchQuery.Trim();
+            return filteredTasks
+                .Where(t => t.Title.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)
+                    || t.Description.Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }
 

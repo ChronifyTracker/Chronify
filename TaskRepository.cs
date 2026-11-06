@@ -18,6 +18,13 @@ namespace Chronify
         {
             IEnumerable<TaskItem> tasks = _tasks;
 
+            if (!string.IsNullOrWhiteSpace(filter?.SearchQuery))
+            {
+                var searchQuery = filter.SearchQuery.Trim();
+                tasks = tasks.Where(t => t.Title.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)
+                    || t.Description.Contains(searchQuery, StringComparison.OrdinalIgnoreCase));
+            }
+
             if (filter?.Priority is TaskPriority priority)
                 tasks = tasks.Where(t => t.Priority == priority);
 
@@ -28,19 +35,6 @@ namespace Chronify
                 tasks = tasks.Where(t => t.Status == status);
 
             return tasks.ToList();
-        }
-
-        public List<TaskItem> Search(string query)
-        {
-            if (string.IsNullOrWhiteSpace(query))
-                return GetAll();
-
-            query = query.Trim();
-
-            return _tasks
-                .Where(t => t.Title.Contains(query, StringComparison.OrdinalIgnoreCase)
-                    || t.Description.Contains(query, StringComparison.OrdinalIgnoreCase))
-                .ToList();
         }
 
         public bool Update(TaskItem task)
