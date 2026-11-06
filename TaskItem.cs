@@ -18,20 +18,20 @@ namespace Chronify
         public TimeSpan? TimeRemaining => DueDate is DateTime dueDate ? dueDate - DateTime.Now : null;
 
         public TaskItem(
-            string title, 
-            string description, 
-            DateTime? dueDate,
-            TaskPriority priority,
-            TaskStatus status = TaskStatus.New,
+            string title,
+            string description = "",
+            DateTime? dueDate = null,
             int estimatedMinutes = 0,
+            TaskPriority priority = TaskPriority.Medium,
+            TaskStatus status = TaskStatus.New,
             Category? category = null)
         {
             Title = title;
             Description = description;
             DueDate = dueDate;
+            EstimatedMinutes = estimatedMinutes;
             Priority = priority;
             Status = status;
-            EstimatedMinutes = estimatedMinutes;
 
             if (category != null)
             {
@@ -40,9 +40,7 @@ namespace Chronify
             }
         }
 
-        public TaskItem()
-        {
-        }
+        private TaskItem() { }
 
         public void StartTask()
         {
