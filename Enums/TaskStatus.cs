@@ -4,6 +4,6 @@ namespace Chronify
     {
         New = 0,
         InProgress = 1,
-        Done = 2
+        Completed = 2
     }
 }
