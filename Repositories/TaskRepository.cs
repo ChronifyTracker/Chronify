@@ -2,7 +2,7 @@ namespace Chronify
 {
     public class TaskRepository : ITaskRepository
     {
-        private List<TaskItem> _tasks = new();
+        private readonly List<TaskItem> _tasks = new();
 
         public void Add(TaskItem task)
         {
