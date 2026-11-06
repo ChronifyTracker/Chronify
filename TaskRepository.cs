@@ -14,9 +14,20 @@ namespace Chronify
             return _tasks.FirstOrDefault(t => t.Id == taskId);
         }
 
-        public List<TaskItem> GetAll()
+        public List<TaskItem> GetAll(TaskFilter? filter = null)
         {
-            return _tasks.ToList();
+            IEnumerable<TaskItem> tasks = _tasks;
+
+            if (filter?.Priority is TaskPriority priority)
+                tasks = tasks.Where(t => t.Priority == priority);
+
+            if (filter?.CategoryId is Guid categoryId)
+                tasks = tasks.Where(t => t.CategoryId == categoryId);
+
+            if (filter?.Status is TaskStatus status)
+                tasks = tasks.Where(t => t.Status == status);
+
+            return tasks.ToList();
         }
 
         public List<TaskItem> Search(string query)

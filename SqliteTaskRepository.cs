@@ -24,11 +24,21 @@ namespace Chronify
                 .FirstOrDefault(t => t.Id == taskId);
         }
 
-        public List<TaskItem> GetAll()
+        public List<TaskItem> GetAll(TaskFilter? filter = null)
         {
-            return _context.Tasks
-                .Include(t => t.Category)
-                .ToList();
+            IQueryable<TaskItem> tasks = _context.Tasks
+                .Include(t => t.Category);
+
+            if (filter?.Priority is TaskPriority priority)
+                tasks = tasks.Where(t => t.Priority == priority);
+
+            if (filter?.CategoryId is Guid categoryId)
+                tasks = tasks.Where(t => t.CategoryId == categoryId);
+
+            if (filter?.Status is TaskStatus status)
+                tasks = tasks.Where(t => t.Status == status);
+
+            return tasks.ToList();
         }
 
         public List<TaskItem> Search(string query)
