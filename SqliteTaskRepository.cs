@@ -24,26 +24,47 @@ namespace Chronify
                 .FirstOrDefault(t => t.Id == taskId);
         }
 
-        public List<TaskItem> GetAll(TaskFilter? filter = null)
+        public List<TaskItem> GetAll(TaskQuery? query = null)
         {
             IQueryable<TaskItem> tasks = _context.Tasks
                 .Include(t => t.Category);
 
-            if (filter?.Priority is TaskPriority priority)
+            if (query?.Priority is TaskPriority priority)
                 tasks = tasks.Where(t => t.Priority == priority);
 
-            if (filter?.CategoryId is Guid categoryId)
+            if (query?.CategoryId is Guid categoryId)
                 tasks = tasks.Where(t => t.CategoryId == categoryId);
 
-            if (filter?.Status is TaskStatus status)
+            if (query?.Status is TaskStatus status)
                 tasks = tasks.Where(t => t.Status == status);
 
-            var filteredTasks = tasks.ToList();
-            if (string.IsNullOrWhiteSpace(filter?.SearchQuery))
-                return filteredTasks;
+            if (query?.SortBy is TaskSortBy sortBy)
+            {
+                var sortDescending = query.SortDescending;
+                tasks = sortBy switch
+                {
+                    TaskSortBy.DueDate => sortDescending
+                        ? tasks.OrderByDescending(t => t.DueDate)
+                        : tasks.OrderBy(t => t.DueDate),
+                    TaskSortBy.Priority => sortDescending
+                        ? tasks.OrderByDescending(t => t.Priority)
+                        : tasks.OrderBy(t => t.Priority),
+                    TaskSortBy.CreatedAt => sortDescending
+                        ? tasks.OrderByDescending(t => t.CreatedAt)
+                        : tasks.OrderBy(t => t.CreatedAt),
+                    TaskSortBy.Title => sortDescending
+                        ? tasks.OrderByDescending(t => t.Title)
+                        : tasks.OrderBy(t => t.Title),
+                    _ => tasks
+                };
+            }
 
-            var searchQuery = filter.SearchQuery.Trim();
-            return filteredTasks
+            var results = tasks.ToList();
+            if (string.IsNullOrWhiteSpace(query?.Search))
+                return results;
+
+            var searchQuery = query.Search.Trim();
+            return results
                 .Where(t => t.Title.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)
                     || t.Description.Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
                 .ToList();
