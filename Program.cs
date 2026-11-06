@@ -9,20 +9,20 @@ var personal = new Category("Личное", "#50E3C2");
 var task1 = new TaskItem(
     "Сдать лабораторную", 
     "Подготовить отчет и загрузить в систему", 
-    DateTime.Now.AddDays(3), 
-    TaskPriority.High, 
-    TaskStatus.InProgress,
+    dueDate: DateTime.Now.AddDays(3),
     estimatedMinutes: 120,
+    priority: TaskPriority.High,
+    status: TaskStatus.InProgress,
     category: university
 );
 
 var task2 = new TaskItem(
     "Купить кофе", 
     "Зерновой для кофемашины", 
-    DateTime.Now.AddHours(3), 
-    TaskPriority.Low, 
-    TaskStatus.InProgress,
+    dueDate: DateTime.Now.AddHours(3),
     estimatedMinutes: 20,
+    priority: TaskPriority.Low,
+    status: TaskStatus.InProgress,
     category: personal
 );
 
