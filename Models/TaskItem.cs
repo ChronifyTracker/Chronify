@@ -5,7 +5,7 @@ namespace Chronify
         public Guid Id { get; init; } = Guid.NewGuid();
         public string Title { get; private set; } = string.Empty;
         public string Description { get; private set; } = string.Empty;
-        public DateTime? DueDate { get; set; }
+        public DateTime? DueDate { get; private set; }
         public int EstimatedMinutes { get; private set; }
         public TaskPriority Priority { get; private set; } = TaskPriority.Medium;
         public TaskStatus Status { get; private set; } = TaskStatus.New;
@@ -26,12 +26,12 @@ namespace Chronify
             TaskStatus status = TaskStatus.New,
             Category? category = null)
         {
-            Title = title;
-            Description = description;
-            DueDate = dueDate;
-            EstimatedMinutes = estimatedMinutes;
-            Priority = priority;
-            Status = status;
+            SetTitle(title);
+            SetDescription(description);
+            SetDueDate(dueDate);
+            SetEstimatedMinutes(estimatedMinutes);
+            SetPriority(priority);
+            SetStatus(status);
 
             if (category is not null)
                 SetCategory(category);
@@ -41,12 +41,12 @@ namespace Chronify
 
         public void StartTask()
         {
-            Status = TaskStatus.InProgress;
+            SetStatus(TaskStatus.InProgress);
         }
 
         public void CompleteTask()
         {
-            Status = TaskStatus.Completed;
+            SetStatus(TaskStatus.Completed);
         }
 
         public void SetStatus(TaskStatus status)
@@ -61,24 +61,40 @@ namespace Chronify
 
         public void SetCategory(Category category)
         {
+            if (category is null)
+                throw new ArgumentNullException(nameof(category), "Категорію не вказано.");
+
             Category = category;
             CategoryId = category.Id;
         }
 
         public void SetEstimatedMinutes(int minutes)
         {
+            if (minutes < 0)
+                throw new ArgumentOutOfRangeException(nameof(minutes), "Орієнтовна тривалість не може бути від'ємною.");
+
             EstimatedMinutes = minutes;
         }
 
-        public void UpdateDetails(string title, string description)
+        public void SetTitle(string title)
         {
-            Title = title;
-            Description = description;
+            if (string.IsNullOrWhiteSpace(title))
+                throw new ArgumentException("Назва завдання обов'язкова.", nameof(title));
+
+            Title = title.Trim();
         }
 
-        public void ChangeDueDate(DateTime? newDate)
+        public void SetDescription(string description)
         {
-            DueDate = newDate;
+            if (description is null)
+                throw new ArgumentNullException(nameof(description), "Опис не вказано.");
+
+            Description = description.Trim();
+        }
+
+        public void SetDueDate(DateTime? dueDate)
+        {
+            DueDate = dueDate;
         }
     }
 }
