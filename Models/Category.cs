@@ -8,18 +8,28 @@ namespace Chronify
 
         public Category(string name, string color)
         {
-            Name = name;
-            Color = color;
+            SetName(name);
+            SetColor(color);
         }
 
         public Category()
         {
         }
 
-        public void Update(string name, string color)
+        public void SetName(string name)
         {
-            Name = name;
-            Color = color;
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException("Назва категорії обов'язкова.", nameof(name));
+
+            Name = name.Trim();
+        }
+
+        public void SetColor(string color)
+        {
+            if (string.IsNullOrWhiteSpace(color))
+                throw new ArgumentException("Колір категорії обов'язковий.", nameof(color));
+
+            Color = color.Trim();
         }
     }
 }
