@@ -1,0 +1,56 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Chronify.Views.AddTaskWindow"
+        Title="Новая задача" Width="560" Height="600"
+        CanResize="False" WindowStartupLocation="CenterOwner">
+    <Grid RowDefinitions="*,Auto" Margin="28">
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Spacing="18">
+                <TextBlock Text="Новая задача" FontSize="26" FontWeight="SemiBold" Margin="0,0,0,6" />
+                <StackPanel Spacing="7">
+                    <TextBlock Text="Название" Classes="muted" />
+                    <TextBox x:Name="TitleInput" Watermark="Что нужно сделать?" MaxLength="200" />
+                </StackPanel>
+                <StackPanel Spacing="7">
+                    <TextBlock Text="Описание" Classes="muted" />
+                    <TextBox x:Name="DescriptionInput" Watermark="Необязательно" AcceptsReturn="True"
+                             TextWrapping="Wrap" Height="90" />
+                </StackPanel>
+                <Grid ColumnDefinitions="*,16,*">
+                    <StackPanel Spacing="7">
+                        <TextBlock Text="Приоритет" Classes="muted" />
+                        <ComboBox x:Name="PriorityInput" SelectedIndex="2" HorizontalAlignment="Stretch">
+                            <ComboBoxItem Content="Отложено" />
+                            <ComboBoxItem Content="Низкий" />
+                            <ComboBoxItem Content="Средний" />
+                            <ComboBoxItem Content="Высокий" />
+                            <ComboBoxItem Content="Критический" />
+                        </ComboBox>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Spacing="7">
+                        <TextBlock Text="Оценка, мин" Classes="muted" />
+                        <NumericUpDown x:Name="MinutesInput" Minimum="0" Maximum="100000" Value="0"
+                                       Increment="15" FormatString="0" />
+                    </StackPanel>
+                </Grid>
+                <Grid ColumnDefinitions="*,16,*">
+                    <StackPanel Spacing="7">
+                        <TextBlock Text="Дата" Classes="muted" />
+                        <CalendarDatePicker x:Name="DateInput" Watermark="Без срока" SelectedDateFormat="Short"
+                                            HorizontalAlignment="Stretch" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Spacing="7">
+                        <TextBlock Text="Время" Classes="muted" />
+                        <TimePicker x:Name="TimeInput" ClockIdentifier="24HourClock" SelectedTime="18:00:00"
+                                    HorizontalAlignment="Stretch" ToolTip.Tip="Учитывается, если выбрана дата" />
+                    </StackPanel>
+                </Grid>
+                <TextBlock x:Name="ErrorText" Foreground="#FF8DA9" TextWrapping="Wrap" IsVisible="False" />
+            </StackPanel>
+        </ScrollViewer>
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12" Margin="0,20,0,0">
+            <Button Content="Отмена" Click="Cancel" />
+            <Button Content="Добавить" Classes="primary" Click="Save" />
+        </StackPanel>
+    </Grid>
+</Window>

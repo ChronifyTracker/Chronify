@@ -1,37 +1,17 @@
-using Chronify;
-using TaskStatus = Chronify.TaskStatus;
+﻿using Avalonia;
 
-ITaskRepository repository = new SqliteTaskRepository();
+namespace Chronify;
 
-var university = new Category("Университет", "#4A90E2");
-var personal = new Category("Личное", "#50E3C2");
-
-var task1 = new TaskItem(
-    "Сдать лабораторную",
-    "Подготовить отчет и загрузить в систему",
-    dueDate: DateTime.Now.AddDays(3),
-    estimatedMinutes: 120,
-    priority: TaskPriority.High,
-    status: TaskStatus.InProgress,
-    category: university
-);
-
-var task2 = new TaskItem(
-    "Купить кофе",
-    estimatedMinutes: 20,
-    priority: TaskPriority.Low,
-    category: personal);
-
-repository.Add(task1);
-repository.Add(task2);
-
-Console.WriteLine($"Всего задач в базе: {repository.GetAll().Count}");
-
-foreach (var task in repository.GetAll())
+internal class Program
 {
-    var categoryName = task.Category?.Name ?? "Без категории";
-    var dueDate = task.DueDate?.ToString("dd.MM.yyyy HH:mm") ?? "Без дедлайну";
-    var timeRemaining = task.TimeRemaining?.ToString(@"d\.hh\:mm") ?? "—";
+    [STAThread]
+    public static void Main(string[] args)
+    {
+        BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+    }
 
-    Console.WriteLine($"[{task.Status}] [{task.Priority}] {task.Title} | Категория: {categoryName} | Дедлайн: {dueDate} | Осталось: {timeRemaining} | Оценка: {task.EstimatedMinutes} мин.");
+    public static AppBuilder BuildAvaloniaApp()
+    {
+        return AppBuilder.Configure<App>().UsePlatformDetect();
+    }
 }

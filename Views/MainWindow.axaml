@@ -1,0 +1,97 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:views="using:Chronify.Views"
+        x:Class="Chronify.Views.MainWindow"
+        Title="Chronify" Width="1120" Height="760"
+        MinWidth="820" MinHeight="560" WindowStartupLocation="CenterScreen">
+    <Window.DataTemplates>
+        <DataTemplate DataType="views:TaskCard">
+            <Border Classes="panel" Padding="20" Margin="0,0,0,12">
+                <StackPanel Spacing="12">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Text="{Binding Status}" Classes="muted" FontSize="12" />
+                        <Border Grid.Column="1" Background="#321D28" CornerRadius="4" Padding="8,3">
+                            <TextBlock Text="{Binding Priority}" Foreground="#FF8DA9" FontSize="11" />
+                        </Border>
+                    </Grid>
+                    <TextBlock Text="{Binding Title}" FontSize="17" FontWeight="SemiBold" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding Description}" Classes="muted" TextWrapping="Wrap" IsVisible="{Binding HasDescription}" />
+                    <Border Height="1" Background="#302A33" />
+                    <TextBlock Text="{Binding Details}" Classes="muted" FontSize="12" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+    </Window.DataTemplates>
+    <Grid ColumnDefinitions="200,*">
+        <Border Background="#171419" BorderBrush="#2B252E" BorderThickness="0,0,1,0" Padding="18,30">
+            <StackPanel Spacing="38">
+                <StackPanel Orientation="Horizontal" Spacing="10" Margin="12,0,0,0">
+                    <Border Width="30" Height="30" Background="#F34F78" CornerRadius="9">
+                        <TextBlock Text="C" Foreground="#16090E" FontWeight="Bold" FontSize="21"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <TextBlock Text="chronify" FontSize="21" FontWeight="SemiBold" VerticalAlignment="Center" />
+                </StackPanel>
+                <StackPanel Spacing="8">
+                    <Button x:Name="HomeButton" Content="Главная" Classes="nav selected" Click="ShowHome" />
+                    <Button x:Name="AllButton" Content="Все задачи" Classes="nav" Click="ShowAll" />
+                </StackPanel>
+            </StackPanel>
+        </Border>
+        <Grid Grid.Column="1" RowDefinitions="Auto,Auto,*" Margin="32,30">
+            <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,26">
+                <StackPanel Spacing="6">
+                    <TextBlock x:Name="PageTitle" Text="Главная" FontSize="30" FontWeight="SemiBold" />
+                    <TextBlock x:Name="DateText" Classes="muted" FontSize="13" />
+                </StackPanel>
+                <Button Grid.Column="1" Content="+  Добавить задачу" Classes="primary"
+                        VerticalAlignment="Center" Click="AddTask" />
+            </Grid>
+            <TextBlock x:Name="ErrorText" Grid.Row="1" Foreground="#FF8DA9"
+                       TextWrapping="Wrap" IsVisible="False" Margin="0,0,0,16" />
+            <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Disabled" Padding="0,0,8,0">
+                <Grid>
+                    <StackPanel x:Name="HomePanel" Spacing="28">
+                        <Grid ColumnDefinitions="*,16,*,16,*">
+                            <Border Classes="panel" Padding="20,16">
+                                <StackPanel Spacing="10">
+                                    <TextBlock Text="Срочные" Classes="muted" />
+                                    <TextBlock x:Name="UrgentCount" FontSize="30" Foreground="#F97094" />
+                                </StackPanel>
+                            </Border>
+                            <Border Grid.Column="2" Classes="panel" Padding="20,16">
+                                <StackPanel Spacing="10">
+                                    <TextBlock Text="Новые" Classes="muted" />
+                                    <TextBlock x:Name="NewCount" FontSize="30" />
+                                </StackPanel>
+                            </Border>
+                            <Border Grid.Column="4" Classes="panel" Padding="20,16">
+                                <StackPanel Spacing="10">
+                                    <TextBlock Text="Всего" Classes="muted" />
+                                    <TextBlock x:Name="TotalCount" FontSize="30" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                        <Grid ColumnDefinitions="*,24,*">
+                            <StackPanel Spacing="16">
+                                <TextBlock Text="Срочные" Classes="section"
+                                           ToolTip.Tip="Высокий приоритет или срок в ближайшие 24 часа" />
+                                <TextBlock x:Name="UrgentEmpty" Text="Срочных задач нет" Classes="muted" />
+                                <ItemsControl x:Name="UrgentTasks" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" Spacing="16">
+                                <TextBlock Text="Новые" Classes="section" />
+                                <TextBlock x:Name="NewEmpty" Text="Новых задач пока нет" Classes="muted" />
+                                <ItemsControl x:Name="NewTasks" />
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                    <StackPanel x:Name="AllPanel" IsVisible="False" Spacing="16">
+                        <TextBlock x:Name="AllEmpty" Text="Задач пока нет" Classes="muted" />
+                        <ItemsControl x:Name="AllTasks" />
+                    </StackPanel>
+                </Grid>
+            </ScrollViewer>
+        </Grid>
+    </Grid>
+</Window>
