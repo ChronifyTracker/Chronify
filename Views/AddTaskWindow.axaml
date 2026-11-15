@@ -28,8 +28,8 @@
                         </ComboBox>
                     </StackPanel>
                     <StackPanel Grid.Column="2" Spacing="7">
-                        <TextBlock Text="Оценка, мин" Classes="muted" />
-                        <NumericUpDown x:Name="MinutesInput" Minimum="0" Maximum="100000" Value="0"
+                        <TextBlock Text="Сколько займёт, мин" Classes="muted" />
+                        <NumericUpDown x:Name="MinutesInput" Value="0"
                                        Increment="15" FormatString="0" />
                     </StackPanel>
                 </Grid>

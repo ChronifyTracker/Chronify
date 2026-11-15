@@ -10,6 +10,8 @@ public partial class AddTaskWindow : Window
     public AddTaskWindow()
     {
         InitializeComponent();
+        MinutesInput.Minimum = TaskItem.MinEstimatedMinutes;
+        MinutesInput.Maximum = TaskItem.MaxEstimatedMinutes;
         Opened += (_, _) => TitleInput.Focus();
     }
 
@@ -55,20 +57,35 @@ public partial class AddTaskWindow : Window
                 DescriptionInput.Text ?? "",
                 dueDate: dueDate,
                 estimatedMinutes: (int)MinutesInput.Value.Value,
-                priority: (TaskPriority)PriorityInput.SelectedIndex);
+                priority: SelectedPriority());
 
             _repository.Add(task);
             Close(true);
         }
-        catch (ArgumentException)
+        catch (ModelValidationException ex)
         {
-            ShowError("Проверьте данные задачи.");
+            ShowError(ex.Error switch
+            {
+                ModelError.TaskTitleRequired => "Введите название.",
+                ModelError.EstimatedMinutesOutOfRange =>
+                    $"Время на задачу — от {TaskItem.MinEstimatedMinutes} до {TaskItem.MaxEstimatedMinutes} мин.",
+                _ => "Проверьте данные задачи."
+            });
         }
         catch (Exception)
         {
             ShowError("Не удалось сохранить задачу.");
         }
     }
+
+    private TaskPriority SelectedPriority() => PriorityInput.SelectedIndex switch
+    {
+        0 => TaskPriority.Postponed,
+        1 => TaskPriority.Low,
+        3 => TaskPriority.High,
+        4 => TaskPriority.Critical,
+        _ => TaskPriority.Medium
+    };
 
     private void Cancel(object? sender, RoutedEventArgs e)
     {
