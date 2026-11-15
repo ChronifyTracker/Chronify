@@ -2,6 +2,8 @@ namespace Chronify
 {
     public class TaskItem
     {
+        public const int MinEstimatedMinutes = 0, MaxEstimatedMinutes = 100_000;
+
         public Guid Id { get; init; } = Guid.NewGuid();
         public string Title { get; private set; } = string.Empty;
         public string Description { get; private set; } = string.Empty;
@@ -61,8 +63,7 @@ namespace Chronify
 
         public void SetCategory(Category category)
         {
-            if (category is null)
-                throw new ArgumentNullException(nameof(category), "Категорію не вказано.");
+            ArgumentNullException.ThrowIfNull(category);
 
             Category = category;
             CategoryId = category.Id;
@@ -70,8 +71,8 @@ namespace Chronify
 
         public void SetEstimatedMinutes(int minutes)
         {
-            if (minutes < 0)
-                throw new ArgumentOutOfRangeException(nameof(minutes), "Орієнтовна тривалість не може бути від'ємною.");
+            if (minutes < MinEstimatedMinutes || minutes > MaxEstimatedMinutes)
+                throw new ModelValidationException(ModelError.EstimatedMinutesOutOfRange);
 
             EstimatedMinutes = minutes;
         }
@@ -79,15 +80,14 @@ namespace Chronify
         public void SetTitle(string title)
         {
             if (string.IsNullOrWhiteSpace(title))
-                throw new ArgumentException("Назва завдання обов'язкова.", nameof(title));
+                throw new ModelValidationException(ModelError.TaskTitleRequired);
 
             Title = title.Trim();
         }
 
         public void SetDescription(string description)
         {
-            if (description is null)
-                throw new ArgumentNullException(nameof(description), "Опис не вказано.");
+            ArgumentNullException.ThrowIfNull(description);
 
             Description = description.Trim();
         }

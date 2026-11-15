@@ -19,7 +19,7 @@ namespace Chronify
         public void SetName(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
-                throw new ArgumentException("Назва категорії обов'язкова.", nameof(name));
+                throw new ModelValidationException(ModelError.CategoryNameRequired);
 
             Name = name.Trim();
         }
@@ -27,7 +27,7 @@ namespace Chronify
         public void SetColor(string color)
         {
             if (string.IsNullOrWhiteSpace(color))
-                throw new ArgumentException("Колір категорії обов'язковий.", nameof(color));
+                throw new ModelValidationException(ModelError.CategoryColorRequired);
 
             Color = color.Trim();
         }
