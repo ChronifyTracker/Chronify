@@ -4,29 +4,28 @@ namespace Chronify
 {
     public class SqliteTaskRepository : ITaskRepository
     {
-        private readonly AppDbContext _context;
-
-        public SqliteTaskRepository()
-        {
-            _context = new AppDbContext();
-        }
-
         public void Add(TaskItem task)
         {
-            _context.Tasks.Add(task);
-            _context.SaveChanges();
+            using var context = new AppDbContext();
+
+            context.Tasks.Add(task);
+            context.SaveChanges();
         }
 
         public TaskItem? GetById(Guid taskId)
         {
-            return _context.Tasks
+            using var context = new AppDbContext();
+
+            return context.Tasks
                 .Include(t => t.Category)
                 .FirstOrDefault(t => t.Id == taskId);
         }
 
         public List<TaskItem> GetAll(TaskQuery? query = null)
         {
-            IQueryable<TaskItem> tasks = _context.Tasks
+            using var context = new AppDbContext();
+
+            IQueryable<TaskItem> tasks = context.Tasks
                 .Include(t => t.Category);
 
             if (query?.Priority is TaskPriority priority)
@@ -72,23 +71,27 @@ namespace Chronify
 
         public bool Update(TaskItem task)
         {
-            if (!_context.Tasks.Any(t => t.Id == task.Id))
+            using var context = new AppDbContext();
+
+            if (!context.Tasks.Any(t => t.Id == task.Id))
                 return false;
 
-            _context.Tasks.Update(task);
-            _context.SaveChanges();
+            context.Tasks.Update(task);
+            context.SaveChanges();
             return true;
         }
 
         public bool Delete(Guid taskId)
         {
-            var task = _context.Tasks.Find(taskId);
+            using var context = new AppDbContext();
+
+            var task = context.Tasks.Find(taskId);
 
             if (task is null)
                 return false;
 
-            _context.Tasks.Remove(task);
-            _context.SaveChanges();
+            context.Tasks.Remove(task);
+            context.SaveChanges();
             return true;
         }
     }
