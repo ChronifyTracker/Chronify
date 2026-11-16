@@ -7,21 +7,13 @@ namespace Chronify.Views;
 
 public partial class MainWindow : Window
 {
-    private ITaskRepository? _repository;
+    private readonly ITaskRepository _repository = new SqliteTaskRepository();
     private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromMinutes(1) };
 
     public MainWindow()
     {
         InitializeComponent();
-        try
-        {
-            _repository = new SqliteTaskRepository();
-            RefreshTasks();
-        }
-        catch (Exception)
-        {
-            ShowError("Не удалось открыть базу задач.");
-        }
+        RefreshTasks();
 
         _timer.Tick += (_, _) => RefreshTasks();
         _timer.Start();
@@ -31,8 +23,6 @@ public partial class MainWindow : Window
     private void RefreshTasks()
     {
         DateText.Text = DateTime.Now.ToString("dddd, d MMMM", CultureInfo.GetCultureInfo("ru-RU"));
-        if (_repository is null)
-            return;
 
         try
         {
@@ -86,12 +76,6 @@ public partial class MainWindow : Window
 
     private async void AddTask(object? sender, RoutedEventArgs e)
     {
-        if (_repository is null)
-        {
-            ShowError("База задач недоступна. Перезапустите приложение.");
-            return;
-        }
-
         var window = new AddTaskWindow(_repository);
         if (await window.ShowDialog<bool>(this))
             RefreshTasks();

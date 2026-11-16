@@ -5,6 +5,7 @@ namespace Chronify
         TaskTitleRequired,
         EstimatedMinutesOutOfRange,
         CategoryNameRequired,
+        CategoryNameTaken,
         CategoryColorRequired
     }
 }

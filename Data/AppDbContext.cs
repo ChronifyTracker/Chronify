@@ -7,9 +7,10 @@ namespace Chronify
         public DbSet<TaskItem> Tasks => Set<TaskItem>();
         public DbSet<Category> Categories => Set<Category>();
 
-        public AppDbContext()
+        public static void CreateDatabaseIfMissing()
         {
-            Database.EnsureCreated();
+            using var context = new AppDbContext();
+            context.Database.EnsureCreated();
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

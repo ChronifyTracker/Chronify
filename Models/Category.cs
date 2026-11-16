@@ -12,7 +12,7 @@ namespace Chronify
             SetColor(color);
         }
 
-        public Category()
+        private Category()
         {
         }
 
