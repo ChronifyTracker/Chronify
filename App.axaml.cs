@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
@@ -15,8 +16,23 @@ public partial class App : Application
     public override void OnFrameworkInitializationCompleted()
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            CreateDatabase();
             desktop.MainWindow = new MainWindow();
+        }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private static void CreateDatabase()
+    {
+        try
+        {
+            AppDbContext.CreateDatabaseIfMissing();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine(ex);
+        }
     }
 }
