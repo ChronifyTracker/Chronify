@@ -1,4 +1,4 @@
-namespace Chronify.Views;
+namespace Chronify.ViewModels;
 
 // Только текст для карточки. Сама задача и её правила остаются в TaskItem.
 public class TaskCard

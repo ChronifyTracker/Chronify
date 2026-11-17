@@ -1,11 +1,11 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:views="using:Chronify.Views"
+        xmlns:vm="using:Chronify.ViewModels"
         x:Class="Chronify.Views.MainWindow"
         Title="Chronify" Width="1120" Height="760"
         MinWidth="820" MinHeight="560" WindowStartupLocation="CenterScreen">
     <Window.DataTemplates>
-        <DataTemplate DataType="views:TaskCard">
+        <DataTemplate DataType="vm:TaskCard">
             <Border Classes="panel" Padding="20" Margin="0,0,0,12">
                 <StackPanel Spacing="12">
                     <Grid ColumnDefinitions="*,Auto">
@@ -42,13 +42,13 @@
             <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,26">
                 <StackPanel Spacing="6">
                     <TextBlock x:Name="PageTitle" Text="Главная" FontSize="30" FontWeight="SemiBold" />
-                    <TextBlock x:Name="DateText" Classes="muted" FontSize="13" />
+                    <TextBlock Text="{Binding DateText}" Classes="muted" FontSize="13" />
                 </StackPanel>
                 <Button Grid.Column="1" Content="+  Добавить задачу" Classes="primary"
                         VerticalAlignment="Center" Click="AddTask" />
             </Grid>
-            <TextBlock x:Name="ErrorText" Grid.Row="1" Foreground="#FF8DA9"
-                       TextWrapping="Wrap" IsVisible="False" Margin="0,0,0,16" />
+            <TextBlock Grid.Row="1" Text="Не удалось загрузить задачи." Foreground="#FF8DA9"
+                       TextWrapping="Wrap" IsVisible="{Binding LoadFailed}" Margin="0,0,0,16" />
             <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Disabled" Padding="0,0,8,0">
                 <Grid>
                     <StackPanel x:Name="HomePanel" Spacing="28">
@@ -56,19 +56,19 @@
                             <Border Classes="panel" Padding="20,16">
                                 <StackPanel Spacing="10">
                                     <TextBlock Text="Срочные" Classes="muted" />
-                                    <TextBlock x:Name="UrgentCount" FontSize="30" Foreground="#F97094" />
+                                    <TextBlock Text="{Binding UrgentTasks.Count, StringFormat={}{0:D2}}" FontSize="30" Foreground="#F97094" />
                                 </StackPanel>
                             </Border>
                             <Border Grid.Column="2" Classes="panel" Padding="20,16">
                                 <StackPanel Spacing="10">
                                     <TextBlock Text="Новые" Classes="muted" />
-                                    <TextBlock x:Name="NewCount" FontSize="30" />
+                                    <TextBlock Text="{Binding NewTasks.Count, StringFormat={}{0:D2}}" FontSize="30" />
                                 </StackPanel>
                             </Border>
                             <Border Grid.Column="4" Classes="panel" Padding="20,16">
                                 <StackPanel Spacing="10">
                                     <TextBlock Text="Всего" Classes="muted" />
-                                    <TextBlock x:Name="TotalCount" FontSize="30" />
+                                    <TextBlock Text="{Binding AllTasks.Count, StringFormat={}{0:D2}}" FontSize="30" />
                                 </StackPanel>
                             </Border>
                         </Grid>
@@ -76,19 +76,19 @@
                             <StackPanel Spacing="16">
                                 <TextBlock Text="Срочные" Classes="section"
                                            ToolTip.Tip="Высокий приоритет или срок в ближайшие 24 часа" />
-                                <TextBlock x:Name="UrgentEmpty" Text="Срочных задач нет" Classes="muted" />
-                                <ItemsControl x:Name="UrgentTasks" />
+                                <TextBlock Text="Срочных задач нет" Classes="muted" IsVisible="{Binding !UrgentTasks.Count}" />
+                                <ItemsControl ItemsSource="{Binding UrgentTasks}" />
                             </StackPanel>
                             <StackPanel Grid.Column="2" Spacing="16">
                                 <TextBlock Text="Новые" Classes="section" />
-                                <TextBlock x:Name="NewEmpty" Text="Новых задач пока нет" Classes="muted" />
-                                <ItemsControl x:Name="NewTasks" />
+                                <TextBlock Text="Новых задач пока нет" Classes="muted" IsVisible="{Binding !NewTasks.Count}" />
+                                <ItemsControl ItemsSource="{Binding NewTasks}" />
                             </StackPanel>
                         </Grid>
                     </StackPanel>
                     <StackPanel x:Name="AllPanel" IsVisible="False" Spacing="16">
-                        <TextBlock x:Name="AllEmpty" Text="Задач пока нет" Classes="muted" />
-                        <ItemsControl x:Name="AllTasks" />
+                        <TextBlock Text="Задач пока нет" Classes="muted" IsVisible="{Binding !AllTasks.Count}" />
+                        <ItemsControl ItemsSource="{Binding AllTasks}" />
                     </StackPanel>
                 </Grid>
             </ScrollViewer>

@@ -1,57 +1,26 @@
-using System.Globalization;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
+using Chronify.ViewModels;
 
 namespace Chronify.Views;
 
 public partial class MainWindow : Window
 {
     private readonly ITaskRepository _repository = new SqliteTaskRepository();
+    private readonly MainWindowViewModel _viewModel;
     private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromMinutes(1) };
 
     public MainWindow()
     {
         InitializeComponent();
-        RefreshTasks();
 
-        _timer.Tick += (_, _) => RefreshTasks();
+        _viewModel = new MainWindowViewModel(_repository);
+        DataContext = _viewModel;
+
+        _timer.Tick += (_, _) => _viewModel.Refresh();
         _timer.Start();
         Closed += (_, _) => _timer.Stop();
-    }
-
-    private void RefreshTasks()
-    {
-        DateText.Text = DateTime.Now.ToString("dddd, d MMMM", CultureInfo.GetCultureInfo("ru-RU"));
-
-        try
-        {
-            var tasks = _repository.GetAll(new TaskQuery
-            {
-                SortBy = TaskSortBy.CreatedAt,
-                SortDescending = true
-            });
-            var urgent = tasks.Where(t => t.Status != TaskStatus.Completed &&
-                (t.Priority >= TaskPriority.High || t.DueDate <= DateTime.Now.AddDays(1)))
-                .OrderBy(t => t.DueDate ?? DateTime.MaxValue)
-                .ThenByDescending(t => t.Priority).ToList();
-            var newTasks = tasks.Where(t => t.Status == TaskStatus.New).ToList();
-
-            UrgentTasks.ItemsSource = urgent.Select(t => new TaskCard(t)).ToList();
-            NewTasks.ItemsSource = newTasks.Select(t => new TaskCard(t)).ToList();
-            AllTasks.ItemsSource = tasks.Select(t => new TaskCard(t)).ToList();
-            UrgentCount.Text = urgent.Count.ToString("D2");
-            NewCount.Text = newTasks.Count.ToString("D2");
-            TotalCount.Text = tasks.Count.ToString("D2");
-            UrgentEmpty.IsVisible = urgent.Count == 0;
-            NewEmpty.IsVisible = newTasks.Count == 0;
-            AllEmpty.IsVisible = tasks.Count == 0;
-            ErrorText.IsVisible = false;
-        }
-        catch (Exception)
-        {
-            ShowError("Не удалось загрузить задачи.");
-        }
     }
 
     private void ShowHome(object? sender, RoutedEventArgs e)
@@ -61,7 +30,7 @@ public partial class MainWindow : Window
         PageTitle.Text = "Главная";
         HomeButton.Classes.Add("selected");
         AllButton.Classes.Remove("selected");
-        RefreshTasks();
+        _viewModel.Refresh();
     }
 
     private void ShowAll(object? sender, RoutedEventArgs e)
@@ -71,19 +40,13 @@ public partial class MainWindow : Window
         PageTitle.Text = "Все задачи";
         HomeButton.Classes.Remove("selected");
         AllButton.Classes.Add("selected");
-        RefreshTasks();
+        _viewModel.Refresh();
     }
 
     private async void AddTask(object? sender, RoutedEventArgs e)
     {
         var window = new AddTaskWindow(_repository);
         if (await window.ShowDialog<bool>(this))
-            RefreshTasks();
-    }
-
-    private void ShowError(string message)
-    {
-        ErrorText.Text = message;
-        ErrorText.IsVisible = true;
+            _viewModel.Refresh();
     }
 }
