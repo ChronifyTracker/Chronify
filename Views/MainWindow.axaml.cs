@@ -59,9 +59,8 @@ public partial class MainWindow : Window
         }
 
         var window = new AddTaskWindow { DataContext = dialog };
-        var saved = await window.ShowDialog<bool>(this);
+        await window.ShowDialog<bool>(this);
 
-        if (saved)
-            ViewModel.Refresh();
+        ViewModel.Refresh();
     }
 }
