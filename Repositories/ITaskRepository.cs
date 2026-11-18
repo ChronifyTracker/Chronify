@@ -4,7 +4,7 @@ namespace Chronify
     {
         void Add(TaskItem task);
         TaskItem? GetById(Guid taskId);
-        List<TaskItem> GetAll(TaskQuery? query = null);
+        List<TaskItem> GetAll();
         bool Update(TaskItem task);
         bool Delete(Guid taskId);
     }

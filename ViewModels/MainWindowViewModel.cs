@@ -1,7 +1,9 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using Avalonia.Threading;
+using Chronify.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -9,9 +11,12 @@ namespace Chronify.ViewModels;
 
 public partial class MainWindowViewModel : ObservableObject
 {
+    private static readonly CategoryOption AllCategories = new("Все категории");
+
     private readonly ITaskRepository _repository;
     private readonly ICategoryRepository _categoryRepository;
     private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromMinutes(1) };
+    private List<TaskItem> _tasks = [];
 
     [ObservableProperty]
     public partial string DateText { get; set; } = "";
@@ -25,9 +30,23 @@ public partial class MainWindowViewModel : ObservableObject
     [ObservableProperty]
     public partial bool IsHomePage { get; set; } = true;
 
+    [ObservableProperty]
+    public partial string? SearchText { get; set; }
+
+    [ObservableProperty]
+    public partial CategoryOption? SelectedCategory { get; set; } = AllCategories;
+
+    [ObservableProperty]
+    public partial int StatusIndex { get; set; } = (int)TaskStatusFilter.All;
+
+    [ObservableProperty]
+    public partial int DueIndex { get; set; } = (int)TaskDueFilter.All;
+
     public ObservableCollection<TaskCard> UrgentTasks { get; } = [];
     public ObservableCollection<TaskCard> NewTasks { get; } = [];
     public ObservableCollection<TaskCard> AllTasks { get; } = [];
+    public ObservableCollection<TaskCard> FilteredTasks { get; } = [];
+    public ObservableCollection<CategoryOption> Categories { get; } = [AllCategories];
 
     public MainWindowViewModel(ITaskRepository repository, ICategoryRepository categoryRepository)
     {
@@ -45,27 +64,28 @@ public partial class MainWindowViewModel : ObservableObject
 
         try
         {
-            var tasks = _repository.GetAll(new TaskQuery
-            {
-                SortBy = TaskSortBy.CreatedAt,
-                SortDescending = true
-            });
-            var urgent = tasks.Where(t => t.Status != TaskStatus.Completed &&
+            _tasks = _repository.GetAll();
+
+            var urgent = _tasks.Where(t => t.Status != TaskStatus.Completed &&
                 (t.Priority >= TaskPriority.High || t.IsOverdue || t.IsDueSoon))
                 .OrderBy(t => t.DueDate ?? DateTime.MaxValue)
                 .ThenByDescending(t => t.Priority);
-            var newTasks = tasks.Where(t => t.Status == TaskStatus.New);
+            var newTasks = _tasks.Where(t => t.Status == TaskStatus.New && !t.IsOverdue);
 
             Fill(UrgentTasks, urgent);
             Fill(NewTasks, newTasks);
-            Fill(AllTasks, tasks);
+            Fill(AllTasks, _tasks);
+            ApplyFilters();
             LoadFailed = false;
         }
         catch (Exception ex)
         {
             Debug.WriteLine(ex);
             LoadFailed = true;
+            return;
         }
+
+        LoadCategories();
     }
 
     public AddTaskViewModel CreateAddTask()
@@ -137,6 +157,58 @@ public partial class MainWindowViewModel : ObservableObject
         IsHomePage = false;
         ErrorMessage = null;
         Refresh();
+    }
+
+    [RelayCommand]
+    private void ClearFilters()
+    {
+        SearchText = null;
+        SelectedCategory = AllCategories;
+        StatusIndex = (int)TaskStatusFilter.All;
+        DueIndex = (int)TaskDueFilter.All;
+    }
+
+    protected override void OnPropertyChanged(PropertyChangedEventArgs e)
+    {
+        base.OnPropertyChanged(e);
+
+        if (e.PropertyName is nameof(SearchText) or nameof(SelectedCategory)
+            or nameof(StatusIndex) or nameof(DueIndex))
+            ApplyFilters();
+    }
+
+    private void ApplyFilters()
+    {
+        var filter = new TaskFilter
+        {
+            Search = SearchText,
+            CategoryId = SelectedCategory?.Category?.Id,
+            Status = (TaskStatusFilter)StatusIndex,
+            Due = (TaskDueFilter)DueIndex
+        };
+
+        Fill(FilteredTasks, filter.Apply(_tasks));
+    }
+
+    private void LoadCategories()
+    {
+        try
+        {
+            var categories = _categoryRepository.GetAll();
+
+            for (var i = 0; i < categories.Count; i++)
+            {
+                var category = categories[i];
+
+                if (!Categories.Any(option => option.Category?.Id == category.Id))
+                    Categories.Insert(i + 1, new CategoryOption(category.Name, category));
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine(ex);
+            ErrorMessage = "Не удалось загрузить категории.";
+        }
     }
 
     private void ChangeTask(Guid taskId, Action<TaskItem> change)
