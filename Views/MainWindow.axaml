@@ -53,27 +53,27 @@
             </Grid>
             <TextBlock Grid.Row="1" Text="Не удалось загрузить задачи." Foreground="#FF8DA9"
                        TextWrapping="Wrap" IsVisible="{Binding LoadFailed}" Margin="0,0,0,16" />
-            <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Disabled" Padding="0,0,8,0"
-                          IsVisible="{Binding !LoadFailed}">
-                <Grid>
-                    <StackPanel Spacing="28" IsVisible="{Binding IsHomePage}">
+            <Grid Grid.Row="2" IsVisible="{Binding !LoadFailed}">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled" Padding="0,0,8,0"
+                              IsVisible="{Binding IsHomePage}">
+                    <StackPanel Spacing="28">
                         <Grid ColumnDefinitions="*,16,*,16,*">
                             <Border Classes="panel" Padding="20,16">
                                 <StackPanel Spacing="10">
                                     <TextBlock Text="Срочные" Classes="muted" />
-                                    <TextBlock Text="{Binding UrgentTasks.Count, StringFormat={}{0:D2}}" FontSize="30" Foreground="#F97094" />
+                                    <TextBlock Text="{Binding UrgentTasks.Count}" FontSize="30" Foreground="#F97094" />
                                 </StackPanel>
                             </Border>
                             <Border Grid.Column="2" Classes="panel" Padding="20,16">
                                 <StackPanel Spacing="10">
                                     <TextBlock Text="Новые" Classes="muted" />
-                                    <TextBlock Text="{Binding NewTasks.Count, StringFormat={}{0:D2}}" FontSize="30" />
+                                    <TextBlock Text="{Binding NewTasks.Count}" FontSize="30" />
                                 </StackPanel>
                             </Border>
                             <Border Grid.Column="4" Classes="panel" Padding="20,16">
                                 <StackPanel Spacing="10">
                                     <TextBlock Text="Всего" Classes="muted" />
-                                    <TextBlock Text="{Binding AllTasks.Count, StringFormat={}{0:D2}}" FontSize="30" />
+                                    <TextBlock Text="{Binding AllTasks.Count}" FontSize="30" />
                                 </StackPanel>
                             </Border>
                         </Grid>
@@ -91,12 +91,34 @@
                             </StackPanel>
                         </Grid>
                     </StackPanel>
-                    <StackPanel Spacing="16" IsVisible="{Binding !IsHomePage}">
-                        <TextBlock Text="Задач пока нет" Classes="muted" IsVisible="{Binding !AllTasks.Count}" />
-                        <ItemsControl ItemsSource="{Binding AllTasks}" />
-                    </StackPanel>
+                </ScrollViewer>
+                <Grid IsVisible="{Binding !IsHomePage}">
+                    <TextBlock Text="Задач пока нет" Classes="muted" IsVisible="{Binding !AllTasks.Count}" />
+                    <Border Classes="panel" ClipToBounds="True" VerticalAlignment="Top"
+                            IsVisible="{Binding !!AllTasks.Count}">
+                        <DataGrid ItemsSource="{Binding AllTasks}" IsReadOnly="True" CanUserSortColumns="False">
+                            <DataGrid.Styles>
+                                <Style Selector="DataGridRow" x:DataType="vm:TaskCard">
+                                    <Setter Property="ToolTip.Tip" Value="{Binding Tooltip}" />
+                                </Style>
+                            </DataGrid.Styles>
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Название" Binding="{Binding Title}" Width="*" MinWidth="160" />
+                                <DataGridTemplateColumn Header="Срок">
+                                    <DataTemplate x:DataType="vm:TaskCard">
+                                        <TextBlock Text="{Binding DueDate}" Margin="12,0" VerticalAlignment="Center"
+                                                   Classes.overdue="{Binding IsOverdue}" Classes.soon="{Binding IsDueSoon}" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn Header="Приоритет" Binding="{Binding Priority}" />
+                                <DataGridTextColumn Header="Статус" Binding="{Binding Status}" />
+                                <DataGridTextColumn Header="Категория" Binding="{Binding Category}" MaxWidth="180" />
+                                <DataGridTextColumn Header="Займёт, мин" Binding="{Binding EstimatedMinutes}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
                 </Grid>
-            </ScrollViewer>
+            </Grid>
         </Grid>
     </Grid>
 </Window>

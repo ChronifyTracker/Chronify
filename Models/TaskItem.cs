@@ -17,6 +17,7 @@ namespace Chronify
         public Category? Category { get; private set; }
 
         public bool IsOverdue => Status != TaskStatus.Completed && DueDate is DateTime dueDate && DateTime.Now > dueDate;
+        public bool IsDueSoon => Status != TaskStatus.Completed && TimeRemaining is TimeSpan left && left >= TimeSpan.Zero && left <= TimeSpan.FromDays(1);
         public TimeSpan? TimeRemaining => DueDate is DateTime dueDate ? dueDate - DateTime.Now : null;
 
         public TaskItem(
