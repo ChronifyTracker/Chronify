@@ -66,9 +66,8 @@ public partial class MainWindowViewModel : ObservableObject
         {
             _tasks = _repository.GetAll();
 
-            var urgent = _tasks.Where(t => t.Status != TaskStatus.Completed &&
-                (t.Priority >= TaskPriority.High || t.IsOverdue || t.IsDueSoon));
-            var newTasks = _tasks.Where(t => t.Status == TaskStatus.New && !t.IsOverdue);
+            var urgent = _tasks.Where(task => task.IsUrgent);
+            var newTasks = new TaskFilter { Status = TaskStatusFilter.New }.Apply(_tasks);
 
             Fill(UrgentTasks, TaskSorter.SortByUrgency(urgent));
             Fill(NewTasks, newTasks);
