@@ -55,6 +55,7 @@
                     <StackPanel Spacing="7">
                         <TextBlock Text="Дата" Classes="muted" />
                         <CalendarDatePicker SelectedDate="{Binding DueDate}"
+                                            Text="{Binding DateText, Mode=OneWayToSource}"
                                             Watermark="Без срока" SelectedDateFormat="Short"
                                             HorizontalAlignment="Stretch" />
                     </StackPanel>

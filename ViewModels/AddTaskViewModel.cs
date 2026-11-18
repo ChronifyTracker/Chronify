@@ -1,26 +1,13 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace Chronify.ViewModels;
 
 public partial class AddTaskViewModel : ObservableObject
 {
-    private static readonly string[] CategoryColors =
-
-    [
-
-        "#F34F78",
-        "#5B9BF3",
-        "#4CC38A",
-        "#F2B45A",
-
-        "#A78BFA",
-        "#3CC8C8",
-        "#F2854A",
-        "#E06BD6"
-
-    ];
+    private const string DefaultCategoryColor = "#F34F78";
 
     private static readonly CategoryOption NoCategory = new("Без категории");
     private static readonly CategoryOption NewCategory = new("+ Добавить категорию", isAddNew: true);
@@ -50,6 +37,9 @@ public partial class AddTaskViewModel : ObservableObject
 
     [ObservableProperty]
     public partial DateTime? DueDate { get; set; }
+
+    [ObservableProperty]
+    public partial string? DateText { get; set; }
 
     [ObservableProperty]
     public partial TimeSpan? DueTime { get; set; } = TimeSpan.FromHours(18);
@@ -118,8 +108,22 @@ public partial class AddTaskViewModel : ObservableObject
             return false;
         }
 
-        if (IsAddingCategory && !AddCategory())
+        if (Minutes < TaskItem.MinEstimatedMinutes || Minutes > TaskItem.MaxEstimatedMinutes)
         {
+            ErrorMessage = $"Время на задачу — от {TaskItem.MinEstimatedMinutes} до {TaskItem.MaxEstimatedMinutes} мин.";
+            return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(DateText) &&
+            (!DateTime.TryParse(
+            DateText,
+            CultureInfo.CurrentCulture,
+            DateTimeStyles.None,
+            out var parsed
+        )
+                || DueDate is null || parsed.Date != DueDate.Value.Date))
+        {
+            ErrorMessage = "Проверьте дату.";
             return false;
         }
 
@@ -131,13 +135,18 @@ public partial class AddTaskViewModel : ObservableObject
 
         try
         {
-            var task = _task ?? new TaskItem(Title);
+            var task = _task?.Copy() ?? new TaskItem(Title);
 
             task.SetTitle(Title);
             task.SetDescription(Description ?? "");
             task.SetDueDate(dueDate);
             task.SetEstimatedMinutes((int)Minutes.Value);
             task.SetPriority((TaskPriority)PriorityIndex);
+            if (IsAddingCategory && !AddCategory())
+            {
+                return false;
+            }
+
             if (CategoriesLoaded)
             {
                 task.SetCategory(SelectedCategory?.Category);
@@ -161,6 +170,8 @@ public partial class AddTaskViewModel : ObservableObject
             {
                 ModelError.TaskTitleRequired => "Введите название.",
                 ModelError.TaskCompleted => "Завершённую задачу нельзя изменить.",
+                ModelError.DueDateInPast => "Дедлайн не может быть в прошлом.",
+                ModelError.TaskPriorityInvalid => "Выберите приоритет задачи.",
                 ModelError.EstimatedMinutesOutOfRange =>
                     $"Время на задачу — от {TaskItem.MinEstimatedMinutes} до {TaskItem.MaxEstimatedMinutes} мин.",
                 _ => "Проверьте данные задачи."
@@ -188,9 +199,7 @@ public partial class AddTaskViewModel : ObservableObject
     {
         try
         {
-            var savedCategories = Categories.Count(option => option.Category is not null);
-            var color = CategoryColors[savedCategories % CategoryColors.Length];
-            var category = new Category(NewCategoryName ?? "", color);
+            var category = new Category(NewCategoryName ?? "", DefaultCategoryColor);
             var option = new CategoryOption(category.Name, category);
 
             _categoryRepository.Add(category);

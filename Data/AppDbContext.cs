@@ -8,15 +8,27 @@ namespace Chronify
 
         public DbSet<Category> Categories => Set<Category>();
 
+        public AppDbContext() { }
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+
         public static void CreateDatabaseIfMissing()
         {
             using var context = new AppDbContext();
-            context.Database.EnsureCreated();
+            DatabaseInitializer.Initialize(context);
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlite("Data Source=chronify.db;Default Timeout=2");
+            if (!optionsBuilder.IsConfigured)
+            {
+                optionsBuilder.UseSqlite("Data Source=chronify.db;Default Timeout=2");
+            }
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<TaskItem>()
+            .HasOne(t => t.Category).WithMany().HasForeignKey(t => t.CategoryId).OnDelete(DeleteBehavior.SetNull);
         }
     }
 }

@@ -57,7 +57,40 @@ namespace Chronify
             SetStatus(status);
         }
 
-        private TaskItem() { }
+        private TaskItem()
+        {
+        }
+
+        // Зовнішнє завдання може вже мати прострочений дедлайн. Ручне введення й далі перевіряється.
+        public static TaskItem FromImport(
+            string title,
+            string description = "",
+            DateTime? dueDate = null,
+            int estimatedMinutes = 0,
+            TaskPriority priority = TaskPriority.Medium,
+            TaskStatus status = TaskStatus.New,
+            Category? category = null,
+            DateTime? completedAt = null,
+            DateTime? createdAt = null
+        )
+        {
+            var task = new TaskItem(
+                title,
+                description,
+                estimatedMinutes: estimatedMinutes,
+                priority: priority,
+                category: category
+            )
+            { CreatedAt = createdAt ?? DateTime.Now };
+            task.DueDate = dueDate;
+            task.SetStatus(status);
+            if (status == TaskStatus.Completed && completedAt is not null)
+            {
+                task.CompletedAt = completedAt;
+            }
+
+            return task;
+        }
 
         public void StartTask()
         {
@@ -78,6 +111,11 @@ namespace Chronify
 
         private void SetStatus(TaskStatus status)
         {
+            if (!Enum.IsDefined(status))
+            {
+                throw new ModelValidationException(ModelError.TaskStatusInvalid);
+            }
+
             Status = status;
 
             if (status == TaskStatus.Completed)
@@ -93,6 +131,11 @@ namespace Chronify
         public void SetPriority(TaskPriority newPriority)
         {
             EnsureNotCompleted();
+
+            if (!Enum.IsDefined(newPriority))
+            {
+                throw new ModelValidationException(ModelError.TaskPriorityInvalid);
+            }
 
             Priority = newPriority;
         }
@@ -141,6 +184,12 @@ namespace Chronify
         {
             EnsureNotCompleted();
 
+            // Прострочений дедлайн можна залишити під час редагування інших полів.
+            if (dueDate < DateTime.Now && dueDate != DueDate)
+            {
+                throw new ModelValidationException(ModelError.DueDateInPast);
+            }
+
             DueDate = dueDate;
         }
 
@@ -150,6 +199,25 @@ namespace Chronify
             {
                 throw new ModelValidationException(ModelError.TaskCompleted);
             }
+        }
+
+        // Редагуємо копію: помилка форми не повинна змінювати початковий об'єкт.
+        public TaskItem Copy()
+        {
+            return new()
+            {
+                Id = Id,
+                Title = Title,
+                Description = Description,
+                DueDate = DueDate,
+                EstimatedMinutes = EstimatedMinutes,
+                Priority = Priority,
+                Status = Status,
+                CreatedAt = CreatedAt,
+                CompletedAt = CompletedAt,
+                CategoryId = CategoryId,
+                Category = Category
+            };
         }
     }
 }

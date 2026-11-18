@@ -130,10 +130,10 @@ public class TaskFilterTests
         var study = new Category("Учёба", "#F34F78");
         var tasks = new List<TaskItem>
         {
-            new("Лаба сегодня", dueDate: DateTime.Today.AddHours(23), category: study),
-            new("Лаба через неделю", dueDate: DateTime.Today.AddDays(7), category: study),
-            new("Лаба без категории", dueDate: DateTime.Today.AddHours(23)),
-            new("Отчёт сегодня", dueDate: DateTime.Today.AddHours(23), category: study)
+            TaskItem.FromImport("Лаба сегодня", dueDate: DateTime.Today.AddHours(23), category: study),
+            TaskItem.FromImport("Лаба через неделю", dueDate: DateTime.Today.AddDays(7), category: study),
+            TaskItem.FromImport("Лаба без категории", dueDate: DateTime.Today.AddHours(23)),
+            TaskItem.FromImport("Отчёт сегодня", dueDate: DateTime.Today.AddHours(23), category: study)
         };
         var filter = new TaskFilter
         {
@@ -156,15 +156,15 @@ public class TaskFilterTests
 
         [
 
-            new("new", dueDate: tomorrow),
+            TaskItem.FromImport("new", dueDate: tomorrow),
 
-            new("new overdue", dueDate: yesterday),
+            TaskItem.FromImport("new overdue", dueDate: yesterday),
 
             new("in progress", status: TaskStatus.InProgress),
 
-            new("in progress overdue", dueDate: yesterday, status: TaskStatus.InProgress),
+            TaskItem.FromImport("in progress overdue", dueDate: yesterday, status: TaskStatus.InProgress),
 
-            new("completed late", dueDate: yesterday, status: TaskStatus.Completed)
+            TaskItem.FromImport("completed late", dueDate: yesterday, status: TaskStatus.Completed)
 
         ];
     }
@@ -177,17 +177,17 @@ public class TaskFilterTests
 
         [
 
-            new("yesterday end", dueDate: today.AddMinutes(-1)),
+            TaskItem.FromImport("yesterday end", dueDate: today.AddMinutes(-1)),
 
-            new("today start", dueDate: today),
+            TaskItem.FromImport("today start", dueDate: today),
 
-            new("today end", dueDate: today.AddDays(1).AddMinutes(-1)),
+            TaskItem.FromImport("today end", dueDate: today.AddDays(1).AddMinutes(-1)),
 
-            new("tomorrow", dueDate: today.AddDays(1)),
+            TaskItem.FromImport("tomorrow", dueDate: today.AddDays(1)),
 
-            new("day after tomorrow end", dueDate: today.AddDays(3).AddMinutes(-1)),
+            TaskItem.FromImport("day after tomorrow end", dueDate: today.AddDays(3).AddMinutes(-1)),
 
-            new("in three days", dueDate: today.AddDays(3)),
+            TaskItem.FromImport("in three days", dueDate: today.AddDays(3)),
 
             new("no deadline")
 

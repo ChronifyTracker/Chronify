@@ -33,6 +33,11 @@ namespace Chronify
                 throw new ModelValidationException(ModelError.CategoryColorRequired);
             }
 
+            if (!System.Text.RegularExpressions.Regex.IsMatch(color.Trim(), "^#[0-9a-fA-F]{6}$"))
+            {
+                throw new ArgumentException("Колір потрібно записати у форматі #RRGGBB.");
+            }
+
             Color = color.Trim();
         }
     }

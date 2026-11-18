@@ -1,5 +1,9 @@
 bin/
 obj/
+artifacts/
+.env
+.env.*
+.neon
 
 .vs/
 *.suo
@@ -12,5 +16,6 @@ obj/
 *.db
 *.db-shm
 *.db-wal
+*.session.bin
 
 *.pdf

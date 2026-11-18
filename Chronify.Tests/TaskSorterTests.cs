@@ -16,8 +16,8 @@ public class TaskSorterTests
     [Fact]
     public void EarlierDeadlineGoesFirst()
     {
-        var later = new TaskItem("later", dueDate: Start.AddDays(3));
-        var sooner = new TaskItem("sooner", dueDate: Start.AddDays(1));
+        var later = TaskItem.FromImport("later", dueDate: Start.AddDays(3));
+        var sooner = TaskItem.FromImport("sooner", dueDate: Start.AddDays(1));
 
         var sorted = TaskSorter.SortByUrgency([later, sooner]);
 
@@ -27,8 +27,8 @@ public class TaskSorterTests
     [Fact]
     public void HigherPriorityGetsHeadStart()
     {
-        var medium = new TaskItem("medium", dueDate: Start.AddDays(4), priority: TaskPriority.Medium);
-        var critical = new TaskItem("critical", dueDate: Start.AddDays(5), priority: TaskPriority.Critical);
+        var medium = TaskItem.FromImport("medium", dueDate: Start.AddDays(4), priority: TaskPriority.Medium);
+        var critical = TaskItem.FromImport("critical", dueDate: Start.AddDays(5), priority: TaskPriority.Critical);
 
         var sorted = TaskSorter.SortByUrgency([medium, critical]);
 
@@ -38,8 +38,8 @@ public class TaskSorterTests
     [Fact]
     public void PriorityDoesNotBeatMuchEarlierDeadline()
     {
-        var critical = new TaskItem("critical", dueDate: Start.AddDays(6), priority: TaskPriority.Critical);
-        var low = new TaskItem("low", dueDate: Start.AddDays(1), priority: TaskPriority.Low);
+        var critical = TaskItem.FromImport("critical", dueDate: Start.AddDays(6), priority: TaskPriority.Critical);
+        var low = TaskItem.FromImport("low", dueDate: Start.AddDays(1), priority: TaskPriority.Low);
 
         var sorted = TaskSorter.SortByUrgency([critical, low]);
 
@@ -49,8 +49,8 @@ public class TaskSorterTests
     [Fact]
     public void LongerTaskGoesFirstWhenDeadlinesMatch()
     {
-        var quick = new TaskItem("quick", dueDate: Start.AddDays(4), estimatedMinutes: 5);
-        var longTask = new TaskItem("long", dueDate: Start.AddDays(4), estimatedMinutes: 600);
+        var quick = TaskItem.FromImport("quick", dueDate: Start.AddDays(4), estimatedMinutes: 5);
+        var longTask = TaskItem.FromImport("long", dueDate: Start.AddDays(4), estimatedMinutes: 600);
 
         var sorted = TaskSorter.SortByUrgency([quick, longTask]);
 
@@ -60,8 +60,8 @@ public class TaskSorterTests
     [Fact]
     public void HigherPriorityGoesFirstWhenStartTimesMatch()
     {
-        var low = new TaskItem("low", dueDate: Start.AddDays(2), priority: TaskPriority.Low);
-        var critical = new TaskItem("critical", dueDate: Start.AddDays(5), priority: TaskPriority.Critical);
+        var low = TaskItem.FromImport("low", dueDate: Start.AddDays(2), priority: TaskPriority.Low);
+        var critical = TaskItem.FromImport("critical", dueDate: Start.AddDays(5), priority: TaskPriority.Critical);
 
         var sorted = TaskSorter.SortByUrgency([low, critical]);
 
@@ -72,7 +72,7 @@ public class TaskSorterTests
     public void TasksWithoutDeadlineGoAfterTasksWithDeadline()
     {
         var noDeadline = new TaskItem("no deadline", priority: TaskPriority.Critical);
-        var withDeadline = new TaskItem(
+        var withDeadline = TaskItem.FromImport(
             "with deadline",
             dueDate: Start.AddDays(30),
             priority: TaskPriority.Postponed
@@ -97,7 +97,7 @@ public class TaskSorterTests
     [Fact]
     public void CompletedTasksGoLast()
     {
-        var completed = new TaskItem(
+        var completed = TaskItem.FromImport(
             "completed",
             dueDate: Start.AddDays(-5),
             priority: TaskPriority.Critical,
@@ -113,8 +113,8 @@ public class TaskSorterTests
     [Fact]
     public void VeryEarlyDeadlineIsSortedFirst()
     {
-        var normal = new TaskItem("normal", dueDate: Start);
-        var yearOne = new TaskItem(
+        var normal = TaskItem.FromImport("normal", dueDate: Start);
+        var yearOne = TaskItem.FromImport(
             "year one",
             dueDate: DateTime.MinValue.AddHours(18),
             estimatedMinutes: TaskItem.MaxEstimatedMinutes,
@@ -137,8 +137,12 @@ public class TaskSorterTests
     [Fact]
     public void DueDateOrderIgnoresPriority()
     {
-        var critical = new TaskItem("critical later", dueDate: Start.AddDays(2), priority: TaskPriority.Critical);
-        var low = new TaskItem("low sooner", dueDate: Start.AddDays(1), priority: TaskPriority.Low);
+        var critical = TaskItem.FromImport(
+            "critical later",
+            dueDate: Start.AddDays(2),
+            priority: TaskPriority.Critical
+        );
+        var low = TaskItem.FromImport("low sooner", dueDate: Start.AddDays(1), priority: TaskPriority.Low);
         var noDeadline = new TaskItem("no deadline");
 
         var sorted = TaskSorter.Sort([noDeadline, critical, low], TaskSortOrder.DueDate);
@@ -149,8 +153,8 @@ public class TaskSorterTests
     [Fact]
     public void PriorityOrderPutsHighestFirst()
     {
-        var low = new TaskItem("low", dueDate: Start.AddDays(1), priority: TaskPriority.Low);
-        var critical = new TaskItem("critical", dueDate: Start.AddDays(9), priority: TaskPriority.Critical);
+        var low = TaskItem.FromImport("low", dueDate: Start.AddDays(1), priority: TaskPriority.Low);
+        var critical = TaskItem.FromImport("critical", dueDate: Start.AddDays(9), priority: TaskPriority.Critical);
         var medium = new TaskItem("medium", priority: TaskPriority.Medium);
 
         var sorted = TaskSorter.Sort([low, medium, critical], TaskSortOrder.Priority);
@@ -161,8 +165,8 @@ public class TaskSorterTests
     [Fact]
     public void SamePriorityIsOrderedByUrgency()
     {
-        var later = new TaskItem("later", dueDate: Start.AddDays(5), priority: TaskPriority.High);
-        var sooner = new TaskItem("sooner", dueDate: Start.AddDays(1), priority: TaskPriority.High);
+        var later = TaskItem.FromImport("later", dueDate: Start.AddDays(5), priority: TaskPriority.High);
+        var sooner = TaskItem.FromImport("sooner", dueDate: Start.AddDays(1), priority: TaskPriority.High);
 
         var sorted = TaskSorter.Sort([later, sooner], TaskSortOrder.Priority);
 
@@ -216,13 +220,13 @@ public class TaskSorterTests
     [InlineData(TaskSortOrder.Newest)]
     public void CompletedTasksGoLastInEveryOrder(TaskSortOrder order)
     {
-        var completed = new TaskItem(
+        var completed = TaskItem.FromImport(
             "a completed",
             dueDate: Start.AddDays(-5),
             priority: TaskPriority.Critical,
-            status: TaskStatus.Completed
-        )
-        { CreatedAt = Start.AddDays(9) };
+            status: TaskStatus.Completed,
+            createdAt: Start.AddDays(9)
+        );
         var open = new TaskItem("z open", priority: TaskPriority.Postponed) { CreatedAt = Start };
 
         var sorted = TaskSorter.Sort([completed, open], order);
