@@ -1,86 +1,95 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace Chronify
+namespace Chronify;
+
+public class SqliteCategoryRepository : ICategoryRepository
 {
-    public class SqliteCategoryRepository : ICategoryRepository
+    private readonly Guid? _userId;
+    private readonly Func<AppDbContext> _createContext;
+
+    public SqliteCategoryRepository(Guid? userId = null, Func<AppDbContext>? createContext = null)
     {
-        public void Add(Category category)
+        _userId = userId;
+        _createContext = createContext ?? (() => new AppDbContext());
+    }
+
+    public void Add(Category category)
+    {
+        using var context = _createContext();
+        if (category.UserId is not null && category.UserId != _userId)
         {
-            using var context = new AppDbContext();
-
-            if (IsNameTaken(context, category))
-            {
-                throw new ModelValidationException(ModelError.CategoryNameTaken);
-            }
-
-            context.Categories.Add(category);
-            context.SaveChanges();
+            throw new InvalidOperationException("Немає доступу до категорії.");
         }
 
-        public Category? GetById(Guid categoryId)
-        {
-            using var context = new AppDbContext();
+        category.UserId = _userId;
+        CheckName(context, category);
+        context.Categories.Add(category);
+        context.SaveChanges();
+    }
 
-            return context.Categories.Find(categoryId);
+    public Category? GetById(Guid categoryId)
+    {
+        using var context = _createContext();
+        return context.Categories.AsNoTracking().FirstOrDefault(c => c.Id == categoryId && c.UserId == _userId);
+    }
+
+    public List<Category> GetAll()
+    {
+        using var context = _createContext();
+        return context.Categories.AsNoTracking().Where(c => c.UserId == _userId)
+            .ToList().OrderBy(c => c.Name, StringComparer.CurrentCultureIgnoreCase).ToList();
+    }
+
+    public bool Update(Category category)
+    {
+        using var context = _createContext();
+        var stored = context.Categories.FirstOrDefault(c => c.Id == category.Id && c.UserId == _userId);
+        if (stored is null)
+        {
+            return false;
         }
 
-        public List<Category> GetAll()
+        if (stored.Name != category.Name
+            && context.Tasks.Any(t => t.UserId == _userId
+            && t.CategoryId == category.Id
+            && t.GroupAssignmentId != null))
         {
-            using var context = new AppDbContext();
-
-            return context.Categories
-                .ToList()
-                .OrderBy(c => c.Name, StringComparer.CurrentCultureIgnoreCase)
-                .ToList();
+            throw new InvalidOperationException("Название категории групповых задач задаётся названием группы.");
         }
 
-        public bool Update(Category category)
+        category.UserId = _userId;
+        CheckName(context, category);
+        context.Entry(stored).CurrentValues.SetValues(category);
+        context.SaveChanges();
+        return true;
+    }
+
+    public bool Delete(Guid categoryId)
+    {
+        using var context = _createContext();
+        var category = context.Categories.FirstOrDefault(c => c.Id == categoryId && c.UserId == _userId);
+        if (category is null)
         {
-            using var context = new AppDbContext();
-
-            if (!context.Categories.Any(c => c.Id == category.Id))
-            {
-                return false;
-            }
-
-            if (IsNameTaken(context, category))
-            {
-                throw new ModelValidationException(ModelError.CategoryNameTaken);
-            }
-
-            context.Categories.Update(category);
-            context.SaveChanges();
-            return true;
+            return false;
         }
 
-        public bool Delete(Guid categoryId)
+        if (context.Tasks.Any(t => t.UserId == _userId && t.CategoryId == categoryId && t.GroupAssignmentId != null))
         {
-            using var context = new AppDbContext();
-
-            var category = context.Categories.Find(categoryId);
-
-            if (category is null)
-            {
-                return false;
-            }
-
-            context.Tasks
-                .Where(t => t.CategoryId == categoryId)
-                .Load();
-
-            context.Categories.Remove(category);
-            context.SaveChanges();
-            return true;
+            throw new InvalidOperationException("Категория используется групповыми задачами и не может быть удалена.");
         }
 
-        private static bool IsNameTaken(AppDbContext context, Category category)
-        {
-            var otherNames = context.Categories
-                .Where(c => c.Id != category.Id)
-                .Select(c => c.Name)
-                .ToList();
+        context.Categories.Remove(category);
+        context.SaveChanges();
+        return true;
+    }
 
-            return otherNames.Any(name => string.Equals(name, category.Name, StringComparison.OrdinalIgnoreCase));
+    private void CheckName(AppDbContext context, Category category)
+    {
+        var names = context.Categories.Where(c => c.UserId == _userId && c.Id != category.Id)
+            .Select(c => c.Name).ToList();
+        if (names.Any(name => string.Equals(name, category.Name, StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new ModelValidationException(ModelError.CategoryNameTaken);
         }
     }
 }

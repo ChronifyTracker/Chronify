@@ -1,0 +1,32 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:Chronify.ViewModels" xmlns:model="using:Chronify" x:Class="Chronify.Views.CategoriesView" x:DataType="vm:CategoriesViewModel">
+    <Grid ColumnDefinitions="*,24,*">
+        <Border Classes="panel" Padding="16">
+            <ListBox ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="model:Category">
+                        <StackPanel Orientation="Horizontal" Spacing="10" Margin="6">
+                            <Border Width="12" Height="12" CornerRadius="6" Background="{Binding Color}" />
+                            <TextBlock Text="{Binding Name}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Border>
+        <StackPanel Grid.Column="2" Spacing="14">
+            <Button Content="+ Новая категория" Command="{Binding NewCategoryCommand}" />
+            <TextBlock Text="Название" />
+            <TextBox Text="{Binding Name}" MaxLength="50" />
+            <TextBlock Text="Цветовая метка" />
+            <Grid ColumnDefinitions="*,16,42">
+                <ComboBox ItemsSource="{Binding Colors}" SelectedItem="{Binding Color}" HorizontalAlignment="Stretch" />
+                <Border Grid.Column="2" Background="{Binding Color}" CornerRadius="6" />
+            </Grid>
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <Button Content="Сохранить" Classes="primary" Command="{Binding SaveCommand}" />
+                <Button Content="Удалить" Command="{Binding DeleteCommand}" />
+            </StackPanel>
+            <TextBlock Text="Удаление категории сохраняет её задачи без категории." Classes="muted" TextWrapping="Wrap" />
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="#FF8DA9" TextWrapping="Wrap" />
+        </StackPanel>
+    </Grid>
+</UserControl>

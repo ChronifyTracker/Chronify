@@ -5,8 +5,11 @@ namespace Chronify
         public const int MinEstimatedMinutes = 0, MaxEstimatedMinutes = 100_000;
 
         public Guid Id { get; init; } = Guid.NewGuid();
+        public Guid? UserId { get; internal set; }
         public string Title { get; private set; } = string.Empty;
         public string Description { get; private set; } = string.Empty;
+        public Guid? GroupAssignmentId { get; internal set; }
+        public string AssignedByName { get; internal set; } = "";
         public DateTime? DueDate { get; private set; }
         public int EstimatedMinutes { get; private set; }
         public TaskPriority Priority { get; private set; } = TaskPriority.Medium;
@@ -207,6 +210,9 @@ namespace Chronify
             return new()
             {
                 Id = Id,
+                UserId = UserId,
+                GroupAssignmentId = GroupAssignmentId,
+                AssignedByName = AssignedByName,
                 Title = Title,
                 Description = Description,
                 DueDate = DueDate,

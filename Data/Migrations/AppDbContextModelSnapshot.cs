@@ -8,6 +8,6 @@ public sealed class AppDbContextModelSnapshot : ModelSnapshot
 {
     protected override void BuildModel(ModelBuilder modelBuilder)
     {
-        TaskLifecycleSchemaModel.Build(modelBuilder);
+        OfflineSchemaModel.Build(modelBuilder);
     }
 }

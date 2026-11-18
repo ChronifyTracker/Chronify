@@ -3,6 +3,7 @@ namespace Chronify
     public class Category
     {
         public Guid Id { get; init; } = Guid.NewGuid();
+        public Guid? UserId { get; internal set; }
         public string Name { get; private set; } = string.Empty;
         public string Color { get; private set; } = string.Empty;
 
