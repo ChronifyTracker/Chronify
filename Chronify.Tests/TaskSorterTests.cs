@@ -4,7 +4,14 @@ namespace Chronify.Tests;
 
 public class TaskSorterTests
 {
-    private static readonly DateTime Start = new(2030, 1, 10, 12, 0, 0);
+    private static readonly DateTime Start = new(
+        2030,
+        1,
+        10,
+        12,
+        0,
+        0
+    );
 
     [Fact]
     public void EarlierDeadlineGoesFirst()
@@ -65,7 +72,11 @@ public class TaskSorterTests
     public void TasksWithoutDeadlineGoAfterTasksWithDeadline()
     {
         var noDeadline = new TaskItem("no deadline", priority: TaskPriority.Critical);
-        var withDeadline = new TaskItem("with deadline", dueDate: Start.AddDays(30), priority: TaskPriority.Postponed);
+        var withDeadline = new TaskItem(
+            "with deadline",
+            dueDate: Start.AddDays(30),
+            priority: TaskPriority.Postponed
+        );
 
         var sorted = TaskSorter.SortByUrgency([noDeadline, withDeadline]);
 
@@ -86,8 +97,12 @@ public class TaskSorterTests
     [Fact]
     public void CompletedTasksGoLast()
     {
-        var completed = new TaskItem("completed", dueDate: Start.AddDays(-5),
-            priority: TaskPriority.Critical, status: TaskStatus.Completed);
+        var completed = new TaskItem(
+            "completed",
+            dueDate: Start.AddDays(-5),
+            priority: TaskPriority.Critical,
+            status: TaskStatus.Completed
+        );
         var open = new TaskItem("open", priority: TaskPriority.Postponed);
 
         var sorted = TaskSorter.SortByUrgency([completed, open]);
@@ -99,8 +114,12 @@ public class TaskSorterTests
     public void VeryEarlyDeadlineIsSortedFirst()
     {
         var normal = new TaskItem("normal", dueDate: Start);
-        var yearOne = new TaskItem("year one", dueDate: DateTime.MinValue.AddHours(18),
-            estimatedMinutes: TaskItem.MaxEstimatedMinutes, priority: TaskPriority.Critical);
+        var yearOne = new TaskItem(
+            "year one",
+            dueDate: DateTime.MinValue.AddHours(18),
+            estimatedMinutes: TaskItem.MaxEstimatedMinutes,
+            priority: TaskPriority.Critical
+        );
 
         var sorted = TaskSorter.SortByUrgency([normal, yearOne]);
 
@@ -197,8 +216,13 @@ public class TaskSorterTests
     [InlineData(TaskSortOrder.Newest)]
     public void CompletedTasksGoLastInEveryOrder(TaskSortOrder order)
     {
-        var completed = new TaskItem("a completed", dueDate: Start.AddDays(-5),
-            priority: TaskPriority.Critical, status: TaskStatus.Completed) { CreatedAt = Start.AddDays(9) };
+        var completed = new TaskItem(
+            "a completed",
+            dueDate: Start.AddDays(-5),
+            priority: TaskPriority.Critical,
+            status: TaskStatus.Completed
+        )
+        { CreatedAt = Start.AddDays(9) };
         var open = new TaskItem("z open", priority: TaskPriority.Postponed) { CreatedAt = Start };
 
         var sorted = TaskSorter.Sort([completed, open], order);

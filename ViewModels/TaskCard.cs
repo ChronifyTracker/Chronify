@@ -6,7 +6,9 @@ public record TaskCard
     public string Title { get; }
     public string Description { get; }
     public bool HasDescription => Description.Length > 0;
+
     public string? Tooltip => HasDescription ? Description : null;
+
     public string Details { get; }
     public string Priority { get; }
     public string Status { get; }
@@ -14,6 +16,7 @@ public record TaskCard
     public string Category { get; }
     public string? CategoryColor { get; }
     public bool HasCategory => Category.Length > 0;
+
     public string Estimate { get; }
     public bool IsOverdue { get; }
     public bool IsDueSoon { get; }
@@ -49,10 +52,14 @@ public record TaskCard
         CanChange = task.Status != TaskStatus.Completed;
 
         if (IsOverdue)
+        {
             Status = "Просрочена";
+        }
 
         Details = DueDate;
         if (Estimate.Length > 0)
+        {
             Details += $" · {Estimate}";
+        }
     }
 }

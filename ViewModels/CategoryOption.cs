@@ -6,7 +6,11 @@ public class CategoryOption
     public Category? Category { get; }
     public bool IsAddNew { get; }
 
-    public CategoryOption(string name, Category? category = null, bool isAddNew = false)
+    public CategoryOption(
+        string name,
+        Category? category = null,
+        bool isAddNew = false
+    )
     {
         Name = name;
         Category = category;

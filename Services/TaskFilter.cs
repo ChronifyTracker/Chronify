@@ -23,7 +23,9 @@ public class TaskFilter
     private bool MatchesSearch(TaskItem task)
     {
         if (string.IsNullOrWhiteSpace(Search))
+        {
             return true;
+        }
 
         return task.Title.Contains(Search.Trim(), StringComparison.OrdinalIgnoreCase);
     }
@@ -31,7 +33,9 @@ public class TaskFilter
     private bool MatchesCategory(TaskItem task)
     {
         if (CategoryId is null)
+        {
             return true;
+        }
 
         return task.CategoryId == CategoryId;
     }
@@ -51,10 +55,14 @@ public class TaskFilter
     private bool MatchesDue(TaskItem task)
     {
         if (Due == TaskDueFilter.All)
+        {
             return true;
+        }
 
         if (task.DueDate is not DateTime dueDate)
+        {
             return false;
+        }
 
         var days = Due == TaskDueFilter.Today ? 1 : 3;
 

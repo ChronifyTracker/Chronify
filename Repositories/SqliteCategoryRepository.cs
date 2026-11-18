@@ -9,7 +9,9 @@ namespace Chronify
             using var context = new AppDbContext();
 
             if (IsNameTaken(context, category))
+            {
                 throw new ModelValidationException(ModelError.CategoryNameTaken);
+            }
 
             context.Categories.Add(category);
             context.SaveChanges();
@@ -37,10 +39,14 @@ namespace Chronify
             using var context = new AppDbContext();
 
             if (!context.Categories.Any(c => c.Id == category.Id))
+            {
                 return false;
+            }
 
             if (IsNameTaken(context, category))
+            {
                 throw new ModelValidationException(ModelError.CategoryNameTaken);
+            }
 
             context.Categories.Update(category);
             context.SaveChanges();
@@ -54,7 +60,9 @@ namespace Chronify
             var category = context.Categories.Find(categoryId);
 
             if (category is null)
+            {
                 return false;
+            }
 
             context.Tasks
                 .Where(t => t.CategoryId == categoryId)

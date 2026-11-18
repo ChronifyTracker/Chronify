@@ -19,7 +19,9 @@ public partial class AddTaskWindow : Window
     private void FocusNewCategoryInput(object? sender, AvaloniaPropertyChangedEventArgs e)
     {
         if (e.Property == IsVisibleProperty && NewCategoryInput.IsVisible)
+        {
             NewCategoryInput.Focus();
+        }
     }
 
     private void Save(object? sender, RoutedEventArgs e)
@@ -27,7 +29,9 @@ public partial class AddTaskWindow : Window
         var viewModel = (AddTaskViewModel)DataContext!;
 
         if (viewModel.Save())
+        {
             Close(true);
+        }
     }
 
     private void Cancel(object? sender, RoutedEventArgs e)

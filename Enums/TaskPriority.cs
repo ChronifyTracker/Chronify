@@ -2,10 +2,10 @@ namespace Chronify
 {
     public enum TaskPriority
     {
-        Postponed = 0, //отложено
-        Low = 1, // низкий
-        Medium = 2, //средний
-        High = 3, // высокий
-        Critical = 4 // Критический
+        Postponed = 0, // Відкладено
+        Low = 1, // Низький
+        Medium = 2, // Середній
+        High = 3, // Високий
+        Critical = 4 // Критичний
     }
 }

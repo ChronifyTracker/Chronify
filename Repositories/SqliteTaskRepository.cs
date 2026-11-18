@@ -9,7 +9,9 @@ namespace Chronify
             using var context = new AppDbContext();
 
             if (task.Category is not null)
+            {
                 context.Attach(task.Category);
+            }
 
             context.Tasks.Add(task);
             context.SaveChanges();
@@ -39,10 +41,14 @@ namespace Chronify
             using var context = new AppDbContext();
 
             if (!context.Tasks.Any(t => t.Id == task.Id))
+            {
                 return false;
+            }
 
             if (task.Category is not null)
+            {
                 context.Attach(task.Category);
+            }
 
             context.Tasks.Update(task);
             context.SaveChanges();
@@ -56,7 +62,9 @@ namespace Chronify
             var task = context.Tasks.Find(taskId);
 
             if (task is null)
+            {
                 return false;
+            }
 
             context.Tasks.Remove(task);
             context.SaveChanges();

@@ -115,7 +115,13 @@ public class TaskFilterTests
     {
         var filtered = new TaskFilter { Due = TaskDueFilter.NextThreeDays }.Apply(TasksOfEveryDeadline());
 
-        Assert.Equal(["today start", "today end", "tomorrow", "day after tomorrow end"], Titles(filtered));
+        Assert.Equal(
+        [
+            "today start",
+            "today end",
+            "tomorrow",
+            "day after tomorrow end"
+        ], Titles(filtered));
     }
 
     [Fact]
@@ -147,12 +153,19 @@ public class TaskFilterTests
         var tomorrow = DateTime.Now.AddDays(1);
 
         return
+
         [
+
             new("new", dueDate: tomorrow),
+
             new("new overdue", dueDate: yesterday),
+
             new("in progress", status: TaskStatus.InProgress),
+
             new("in progress overdue", dueDate: yesterday, status: TaskStatus.InProgress),
+
             new("completed late", dueDate: yesterday, status: TaskStatus.Completed)
+
         ];
     }
 
@@ -161,14 +174,23 @@ public class TaskFilterTests
         var today = DateTime.Today;
 
         return
+
         [
+
             new("yesterday end", dueDate: today.AddMinutes(-1)),
+
             new("today start", dueDate: today),
+
             new("today end", dueDate: today.AddDays(1).AddMinutes(-1)),
+
             new("tomorrow", dueDate: today.AddDays(1)),
+
             new("day after tomorrow end", dueDate: today.AddDays(3).AddMinutes(-1)),
+
             new("in three days", dueDate: today.AddDays(3)),
+
             new("no deadline")
+
         ];
     }
 

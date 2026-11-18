@@ -5,6 +5,7 @@ namespace Chronify
     public class AppDbContext : DbContext
     {
         public DbSet<TaskItem> Tasks => Set<TaskItem>();
+
         public DbSet<Category> Categories => Set<Category>();
 
         public static void CreateDatabaseIfMissing()
