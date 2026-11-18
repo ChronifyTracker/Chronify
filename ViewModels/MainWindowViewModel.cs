@@ -42,6 +42,9 @@ public partial class MainWindowViewModel : ObservableObject
     [ObservableProperty]
     public partial int DueIndex { get; set; } = (int)TaskDueFilter.All;
 
+    [ObservableProperty]
+    public partial int SortIndex { get; set; } = (int)TaskSortOrder.Urgency;
+
     public ObservableCollection<TaskCard> UrgentTasks { get; } = [];
     public ObservableCollection<TaskCard> NewTasks { get; } = [];
     public ObservableCollection<TaskCard> AllTasks { get; } = [];
@@ -170,7 +173,7 @@ public partial class MainWindowViewModel : ObservableObject
         base.OnPropertyChanged(e);
 
         if (e.PropertyName is nameof(SearchText) or nameof(SelectedCategory)
-            or nameof(StatusIndex) or nameof(DueIndex))
+            or nameof(StatusIndex) or nameof(DueIndex) or nameof(SortIndex))
             ApplyFilters();
     }
 
@@ -186,7 +189,7 @@ public partial class MainWindowViewModel : ObservableObject
 
         var filteredTasks = filter.Apply(_tasks);
 
-        Fill(FilteredTasks, TaskSorter.SortByUrgency(filteredTasks));
+        Fill(FilteredTasks, TaskSorter.Sort(filteredTasks, (TaskSortOrder)SortIndex));
     }
 
     private void LoadCategories()

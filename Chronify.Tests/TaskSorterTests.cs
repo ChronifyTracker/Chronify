@@ -115,6 +115,97 @@ public class TaskSorterTests
         Assert.Empty(sorted);
     }
 
+    [Fact]
+    public void DueDateOrderIgnoresPriority()
+    {
+        var critical = new TaskItem("critical later", dueDate: Start.AddDays(2), priority: TaskPriority.Critical);
+        var low = new TaskItem("low sooner", dueDate: Start.AddDays(1), priority: TaskPriority.Low);
+        var noDeadline = new TaskItem("no deadline");
+
+        var sorted = TaskSorter.Sort([noDeadline, critical, low], TaskSortOrder.DueDate);
+
+        Assert.Equal(["low sooner", "critical later", "no deadline"], Titles(sorted));
+    }
+
+    [Fact]
+    public void PriorityOrderPutsHighestFirst()
+    {
+        var low = new TaskItem("low", dueDate: Start.AddDays(1), priority: TaskPriority.Low);
+        var critical = new TaskItem("critical", dueDate: Start.AddDays(9), priority: TaskPriority.Critical);
+        var medium = new TaskItem("medium", priority: TaskPriority.Medium);
+
+        var sorted = TaskSorter.Sort([low, medium, critical], TaskSortOrder.Priority);
+
+        Assert.Equal(["critical", "medium", "low"], Titles(sorted));
+    }
+
+    [Fact]
+    public void SamePriorityIsOrderedByUrgency()
+    {
+        var later = new TaskItem("later", dueDate: Start.AddDays(5), priority: TaskPriority.High);
+        var sooner = new TaskItem("sooner", dueDate: Start.AddDays(1), priority: TaskPriority.High);
+
+        var sorted = TaskSorter.Sort([later, sooner], TaskSortOrder.Priority);
+
+        Assert.Equal(["sooner", "later"], Titles(sorted));
+    }
+
+    [Fact]
+    public void CategoryOrderGroupsByNameWithUncategorisedLast()
+    {
+        var work = new Category("Работа", "#5B9BF3");
+        var home = new Category("дом", "#4CC38A");
+        var workTask = new TaskItem("work task", category: work);
+        var homeTask = new TaskItem("home task", category: home);
+        var plainTask = new TaskItem("plain task");
+
+        var sorted = TaskSorter.Sort([plainTask, workTask, homeTask], TaskSortOrder.Category);
+
+        Assert.Equal(["home task", "work task", "plain task"], Titles(sorted));
+    }
+
+    [Fact]
+    public void TitleOrderIgnoresCase()
+    {
+        var banana = new TaskItem("banana");
+        var apple = new TaskItem("Apple");
+        var cherry = new TaskItem("cherry");
+
+        var sorted = TaskSorter.Sort([cherry, banana, apple], TaskSortOrder.Title);
+
+        Assert.Equal(["Apple", "banana", "cherry"], Titles(sorted));
+    }
+
+    [Fact]
+    public void NewestOrderPutsLatestCreatedFirst()
+    {
+        var old = new TaskItem("old") { CreatedAt = Start };
+        var recent = new TaskItem("recent") { CreatedAt = Start.AddDays(2) };
+        var middle = new TaskItem("middle") { CreatedAt = Start.AddDays(1) };
+
+        var sorted = TaskSorter.Sort([old, recent, middle], TaskSortOrder.Newest);
+
+        Assert.Equal(["recent", "middle", "old"], Titles(sorted));
+    }
+
+    [Theory]
+    [InlineData(TaskSortOrder.Urgency)]
+    [InlineData(TaskSortOrder.DueDate)]
+    [InlineData(TaskSortOrder.Priority)]
+    [InlineData(TaskSortOrder.Category)]
+    [InlineData(TaskSortOrder.Title)]
+    [InlineData(TaskSortOrder.Newest)]
+    public void CompletedTasksGoLastInEveryOrder(TaskSortOrder order)
+    {
+        var completed = new TaskItem("a completed", dueDate: Start.AddDays(-5),
+            priority: TaskPriority.Critical, status: TaskStatus.Completed) { CreatedAt = Start.AddDays(9) };
+        var open = new TaskItem("z open", priority: TaskPriority.Postponed) { CreatedAt = Start };
+
+        var sorted = TaskSorter.Sort([completed, open], order);
+
+        Assert.Equal(["z open", "a completed"], Titles(sorted));
+    }
+
     private static List<string> Titles(List<TaskItem> tasks)
     {
         return tasks.Select(task => task.Title).ToList();
