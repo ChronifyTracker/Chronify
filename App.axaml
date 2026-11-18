@@ -22,6 +22,7 @@
         <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
         <mi:MaterialIconStyles />
         <Style Selector="Window">
+            <Setter Property="Icon" Value="/Assets/chronify.ico" />
             <Setter Property="Background" Value="#111014" />
             <Setter Property="Foreground" Value="#F6F1F4" />
             <Setter Property="FontFamily" Value="Segoe UI" />
