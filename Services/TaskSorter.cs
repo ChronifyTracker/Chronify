@@ -6,11 +6,34 @@ public static class TaskSorter
 
     public static List<TaskItem> SortByUrgency(IEnumerable<TaskItem> tasks)
     {
-        return tasks
-            .OrderBy(task => task.Status == TaskStatus.Completed)
-            .ThenBy(StartByTicks)
-            .ThenByDescending(task => task.Priority)
-            .ToList();
+        return Sort(tasks, TaskSortOrder.Urgency);
+    }
+
+    public static List<TaskItem> Sort(IEnumerable<TaskItem> tasks, TaskSortOrder order)
+    {
+        var openFirst = tasks.OrderBy(task => task.Status == TaskStatus.Completed);
+
+        var sorted = order switch
+        {
+            TaskSortOrder.DueDate => openFirst
+                .ThenBy(task => task.DueDate ?? DateTime.MaxValue),
+            TaskSortOrder.Priority => openFirst
+                .ThenByDescending(task => task.Priority)
+                .ThenBy(StartByTicks),
+            TaskSortOrder.Category => openFirst
+                .ThenBy(task => task.Category is null)
+                .ThenBy(task => task.Category?.Name, StringComparer.CurrentCultureIgnoreCase)
+                .ThenBy(StartByTicks),
+            TaskSortOrder.Title => openFirst
+                .ThenBy(task => task.Title, StringComparer.CurrentCultureIgnoreCase),
+            TaskSortOrder.Newest => openFirst
+                .ThenByDescending(task => task.CreatedAt),
+            _ => openFirst
+                .ThenBy(StartByTicks)
+                .ThenByDescending(task => task.Priority)
+        };
+
+        return sorted.ToList();
     }
 
     private static long StartByTicks(TaskItem task)

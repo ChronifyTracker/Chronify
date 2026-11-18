@@ -108,17 +108,17 @@
                     <TextBlock Text="Задач пока нет" Classes="muted" IsVisible="{Binding !AllTasks.Count}" />
                     <Grid RowDefinitions="Auto,*" IsVisible="{Binding !!AllTasks.Count}">
                         <WrapPanel ItemSpacing="12" LineSpacing="12" Margin="0,0,0,16">
-                            <TextBox Text="{Binding SearchText}" Watermark="Поиск по названию" Width="240"
+                            <TextBox Text="{Binding SearchText}" Watermark="Поиск по названию" Width="190"
                                      AutomationProperties.Name="Поиск" />
                             <ComboBox ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}"
-                                      Width="180" AutomationProperties.Name="Фильтр по категории">
+                                      Width="170" AutomationProperties.Name="Фильтр по категории">
                                 <ComboBox.ItemTemplate>
                                     <DataTemplate x:DataType="vm:CategoryOption">
                                         <TextBlock Text="{Binding Name}" />
                                     </DataTemplate>
                                 </ComboBox.ItemTemplate>
                             </ComboBox>
-                            <ComboBox SelectedIndex="{Binding StatusIndex}" Width="160"
+                            <ComboBox SelectedIndex="{Binding StatusIndex}" Width="150"
                                       AutomationProperties.Name="Фильтр по статусу">
                                 <ComboBoxItem Content="Все статусы" />
                                 <ComboBoxItem Content="Новая" />
@@ -126,7 +126,7 @@
                                 <ComboBoxItem Content="Завершена" />
                                 <ComboBoxItem Content="Просрочена" />
                             </ComboBox>
-                            <ComboBox SelectedIndex="{Binding DueIndex}" Width="180"
+                            <ComboBox SelectedIndex="{Binding DueIndex}" Width="170"
                                       AutomationProperties.Name="Фильтр по сроку">
                                 <ComboBoxItem Content="Любой срок" />
                                 <ComboBoxItem Content="Сегодня" />
@@ -136,6 +136,15 @@
                                     ToolTip.Tip="Сбросить фильтры" AutomationProperties.Name="Сбросить фильтры">
                                 <mi:MaterialIcon Kind="FilterOff" />
                             </Button>
+                            <ComboBox SelectedIndex="{Binding SortIndex}" Width="160"
+                                      ToolTip.Tip="Сортировка" AutomationProperties.Name="Сортировка">
+                                <ComboBoxItem Content="По срочности" />
+                                <ComboBoxItem Content="По сроку" />
+                                <ComboBoxItem Content="По приоритету" />
+                                <ComboBoxItem Content="По категории" />
+                                <ComboBoxItem Content="По названию" />
+                                <ComboBoxItem Content="Сначала новые" />
+                            </ComboBox>
                         </WrapPanel>
                         <TextBlock Grid.Row="1" Text="Ничего не найдено" Classes="muted"
                                    IsVisible="{Binding !FilteredTasks.Count}" />
