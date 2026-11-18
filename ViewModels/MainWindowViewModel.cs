@@ -46,7 +46,7 @@ public partial class MainWindowViewModel : ObservableObject
                 SortDescending = true
             });
             var urgent = tasks.Where(t => t.Status != TaskStatus.Completed &&
-                (t.Priority >= TaskPriority.High || t.DueDate <= DateTime.Now.AddDays(1)))
+                (t.Priority >= TaskPriority.High || t.IsOverdue || t.IsDueSoon))
                 .OrderBy(t => t.DueDate ?? DateTime.MaxValue)
                 .ThenByDescending(t => t.Priority);
             var newTasks = tasks.Where(t => t.Status == TaskStatus.New);
@@ -84,9 +84,12 @@ public partial class MainWindowViewModel : ObservableObject
 
     private static void Fill(ObservableCollection<TaskCard> cards, IEnumerable<TaskItem> tasks)
     {
-        cards.Clear();
+        var newCards = tasks.Select(task => new TaskCard(task)).ToList();
+        if (newCards.SequenceEqual(cards))
+            return;
 
-        foreach (var task in tasks)
-            cards.Add(new TaskCard(task));
+        cards.Clear();
+        foreach (var card in newCards)
+            cards.Add(card);
     }
 }

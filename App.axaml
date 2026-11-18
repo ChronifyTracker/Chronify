@@ -5,6 +5,12 @@
     <Application.Resources>
         <SolidColorBrush x:Key="AccentBrush">#F34F78</SolidColorBrush>
         <SolidColorBrush x:Key="MutedBrush">#A29AA4</SolidColorBrush>
+        <SolidColorBrush x:Key="DataGridRowSelectedBackgroundBrush">#5A3A4A</SolidColorBrush>
+        <SolidColorBrush x:Key="DataGridRowSelectedHoveredBackgroundBrush">#5A3A4A</SolidColorBrush>
+        <SolidColorBrush x:Key="DataGridRowSelectedUnfocusedBackgroundBrush">#5A3A4A</SolidColorBrush>
+        <SolidColorBrush x:Key="DataGridRowSelectedHoveredUnfocusedBackgroundBrush">#5A3A4A</SolidColorBrush>
+        <SolidColorBrush x:Key="DataGridCellFocusVisualPrimaryBrush">Transparent</SolidColorBrush>
+        <SolidColorBrush x:Key="DataGridCellFocusVisualSecondaryBrush">Transparent</SolidColorBrush>
     </Application.Resources>
     <Application.Styles>
         <FluentTheme>
@@ -12,6 +18,7 @@
                 <ColorPaletteResources x:Key="Dark" Accent="#F34F78" />
             </FluentTheme.Palettes>
         </FluentTheme>
+        <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
         <Style Selector="Window">
             <Setter Property="Background" Value="#111014" />
             <Setter Property="Foreground" Value="#F6F1F4" />
@@ -55,6 +62,27 @@
             <Setter Property="BorderBrush" Value="#302A33" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="12" />
+        </Style>
+        <Style Selector="DataGrid">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="RowHeight" Value="44" />
+            <Setter Property="GridLinesVisibility" Value="Horizontal" />
+            <Setter Property="HorizontalGridLinesBrush" Value="#302A33" />
+        </Style>
+        <Style Selector="DataGridColumnHeader">
+            <Setter Property="Background" Value="#171419" />
+            <Setter Property="Foreground" Value="{StaticResource MutedBrush}" />
+            <Setter Property="FontSize" Value="12" />
+        </Style>
+        <Style Selector="DataGridCell TextBlock">
+            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        </Style>
+        <Style Selector="TextBlock.overdue">
+            <Setter Property="Foreground" Value="#FF6B6B" />
+        </Style>
+        <Style Selector="TextBlock.soon">
+            <Setter Property="Foreground" Value="#F2B45A" />
         </Style>
         <Style Selector="TextBox">
             <Setter Property="CornerRadius" Value="7" />
