@@ -67,12 +67,10 @@ public partial class MainWindowViewModel : ObservableObject
             _tasks = _repository.GetAll();
 
             var urgent = _tasks.Where(t => t.Status != TaskStatus.Completed &&
-                (t.Priority >= TaskPriority.High || t.IsOverdue || t.IsDueSoon))
-                .OrderBy(t => t.DueDate ?? DateTime.MaxValue)
-                .ThenByDescending(t => t.Priority);
+                (t.Priority >= TaskPriority.High || t.IsOverdue || t.IsDueSoon));
             var newTasks = _tasks.Where(t => t.Status == TaskStatus.New && !t.IsOverdue);
 
-            Fill(UrgentTasks, urgent);
+            Fill(UrgentTasks, TaskSorter.SortByUrgency(urgent));
             Fill(NewTasks, newTasks);
             Fill(AllTasks, _tasks);
             ApplyFilters();
@@ -187,7 +185,9 @@ public partial class MainWindowViewModel : ObservableObject
             Due = (TaskDueFilter)DueIndex
         };
 
-        Fill(FilteredTasks, filter.Apply(_tasks));
+        var filteredTasks = filter.Apply(_tasks);
+
+        Fill(FilteredTasks, TaskSorter.SortByUrgency(filteredTasks));
     }
 
     private void LoadCategories()
