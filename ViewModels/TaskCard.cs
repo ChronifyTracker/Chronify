@@ -54,7 +54,5 @@ public record TaskCard
         Details = DueDate;
         if (Estimate.Length > 0)
             Details += $" · {Estimate}";
-        if (HasCategory)
-            Details += $" · {Category}";
     }
 }
