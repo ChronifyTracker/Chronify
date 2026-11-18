@@ -31,42 +31,42 @@ public partial class TaskDetailsViewModel : AsyncPageViewModel
     private Task OpenAttachment(Guid id)
     {
         return RunAsync(async () =>
-    {
-        using var db = _createContext();
-        var file = db.TaskAttachments.Single(a => a.Id == id && a.UserId == _userId && a.TaskId == _taskId);
-        string name = Path.GetFileName(file.Name);
-        foreach (char invalid in Path.GetInvalidFileNameChars())
         {
-            name = name.Replace(invalid, '_');
-        }
-        string[] supported =
-        [
-            ".pdf",
-            ".txt",
-            ".md",
-            ".docx",
-            ".xlsx",
-            ".pptx",
-            ".png",
-            ".jpg",
-            ".jpeg",
-            ".webp"
-        ];
-        if (!supported.Contains(Path.GetExtension(name).ToLowerInvariant()))
-        {
-            throw new InvalidOperationException("Открытие этого типа вложений пока не поддерживается. Файл сохранён в базе данных.");
-        }
-        string directory = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "Chronify",
-            "Attachments",
-            _userId.ToString("N"),
-            file.Id.ToString("N")
-        );
-        Directory.CreateDirectory(directory);
-        string path = Path.Combine(directory, name);
-        await File.WriteAllBytesAsync(path, file.Content);
-        Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
-    });
+            using var db = _createContext();
+            var file = db.TaskAttachments.Single(a => a.Id == id && a.UserId == _userId && a.TaskId == _taskId);
+            string name = Path.GetFileName(file.Name);
+            foreach (char invalid in Path.GetInvalidFileNameChars())
+            {
+                name = name.Replace(invalid, '_');
+            }
+            string[] supported =
+            [
+                ".pdf",
+                ".txt",
+                ".md",
+                ".docx",
+                ".xlsx",
+                ".pptx",
+                ".png",
+                ".jpg",
+                ".jpeg",
+                ".webp"
+            ];
+            if (!supported.Contains(Path.GetExtension(name).ToLowerInvariant()))
+            {
+                throw new InvalidOperationException("Открытие этого типа вложений пока не поддерживается. Файл сохранён в базе данных.");
+            }
+            string directory = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Chronify",
+                "Attachments",
+                _userId.ToString("N"),
+                file.Id.ToString("N")
+            );
+            Directory.CreateDirectory(directory);
+            string path = Path.Combine(directory, name);
+            await File.WriteAllBytesAsync(path, file.Content);
+            Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
+        });
     }
 }

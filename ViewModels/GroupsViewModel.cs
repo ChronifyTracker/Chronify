@@ -164,7 +164,9 @@ public partial class GroupsViewModel : AsyncPageViewModel
     {
         return RunAsync(async () =>
         {
-            await _service.CreateGroup(GroupName); GroupName = ""; await Sync();
+            await _service.CreateGroup(GroupName);
+            GroupName = "";
+            await Sync();
         });
     }
 
@@ -173,7 +175,9 @@ public partial class GroupsViewModel : AsyncPageViewModel
     {
         return RunAsync(async () =>
         {
-            await _service.Join(InviteCode); InviteCode = ""; await Sync();
+            await _service.Join(InviteCode);
+            InviteCode = "";
+            await Sync();
         });
     }
 
@@ -192,51 +196,51 @@ public partial class GroupsViewModel : AsyncPageViewModel
     private Task SetRole(TeamRole role)
     {
         return RunAsync(async () =>
-    {
-        if (SelectedGroup is null || SelectedMember is null)
         {
-            throw new ArgumentException("Выберите участника группы.");
-        }
-        await _service.ChangeRole(SelectedGroup.Id, SelectedMember.Id, role);
-        await Sync();
-    });
+            if (SelectedGroup is null || SelectedMember is null)
+            {
+                throw new ArgumentException("Выберите участника группы.");
+            }
+            await _service.ChangeRole(SelectedGroup.Id, SelectedMember.Id, role);
+            await Sync();
+        });
     }
 
     [RelayCommand]
     private Task AssignTask()
     {
         return RunAsync(async () =>
-    {
-        if (SelectedGroup is null || Assignee is null)
         {
-            throw new ArgumentException("Выберите группу и исполнителя.");
-        }
-        await _service.Assign(SelectedGroup.Id, new CreateAssignmentRequest(
-            Assignee.Id,
-            TaskTitle,
-            TaskDescription,
-            DueDate?.Date.AddDays(1).AddSeconds(-1).ToUniversalTime(),
-            (int)EstimatedMinutes,
-            PriorityIndex,
-            InitialStatusIndex
-        ));
-        TaskTitle = "";
-        TaskDescription = "";
-        await Sync();
-    });
+            if (SelectedGroup is null || Assignee is null)
+            {
+                throw new ArgumentException("Выберите группу и исполнителя.");
+            }
+            await _service.Assign(SelectedGroup.Id, new CreateAssignmentRequest(
+                Assignee.Id,
+                TaskTitle,
+                TaskDescription,
+                DueDate?.Date.AddDays(1).AddSeconds(-1).ToUniversalTime(),
+                (int)EstimatedMinutes,
+                PriorityIndex,
+                InitialStatusIndex
+            ));
+            TaskTitle = "";
+            TaskDescription = "";
+            await Sync();
+        });
     }
 
     [RelayCommand]
     private Task StartTask()
     {
         return RunAsync(async () =>
-    {
-        if (SelectedGroup is null || SelectedTask is null)
         {
-            throw new ArgumentException("Выберите задачу.");
-        }
-        await _service.Start(SelectedGroup.Id, SelectedTask.Id);
-        await Sync();
-    });
+            if (SelectedGroup is null || SelectedTask is null)
+            {
+                throw new ArgumentException("Выберите задачу.");
+            }
+            await _service.Start(SelectedGroup.Id, SelectedTask.Id);
+            await Sync();
+        });
     }
 }

@@ -46,16 +46,16 @@ public partial class PlanningViewModel(ITaskRepository tasks, UserPreferencesRep
     public void Refresh()
     {
         Run(() =>
-    {
-        var saved = preferences.Get();
-        AvailableMinutes = saved.PlanLimitMinutes;
-        DailyLimit = saved.DailyLimitMinutes;
-        LoadCalendar(saved.DailyLimitMinutes);
-        if (FocusTasks.Count > 0)
         {
-            BuildPlan();
-        }
-    });
+            var saved = preferences.Get();
+            AvailableMinutes = saved.PlanLimitMinutes;
+            DailyLimit = saved.DailyLimitMinutes;
+            LoadCalendar(saved.DailyLimitMinutes);
+            if (FocusTasks.Count > 0)
+            {
+                BuildPlan();
+            }
+        });
     }
 
     [RelayCommand]
@@ -81,10 +81,10 @@ public partial class PlanningViewModel(ITaskRepository tasks, UserPreferencesRep
     private void SaveLimits()
     {
         Run(() =>
-    {
-        preferences.Save(ReadMinutes(DailyLimit), ReadMinutes(AvailableMinutes));
-        LoadCalendar(ReadMinutes(DailyLimit));
-    });
+        {
+            preferences.Save(ReadMinutes(DailyLimit), ReadMinutes(AvailableMinutes));
+            LoadCalendar(ReadMinutes(DailyLimit));
+        });
     }
 
     [RelayCommand]

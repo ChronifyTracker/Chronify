@@ -1,14 +1,31 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Threading;
 using Chronify.ViewModels;
 
 namespace Chronify.Views;
 
 public partial class MainWindow : Window
 {
+    private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromMinutes(1) };
+
     public MainWindow()
     {
         InitializeComponent();
+        if (Design.IsDesignMode)
+        {
+            return;
+        }
+
+        _timer.Tick += (_, _) =>
+        {
+            if (DataContext is MainWindowViewModel viewModel)
+            {
+                viewModel.Refresh();
+            }
+        };
+        Opened += (_, _) => _timer.Start();
+        Closed += (_, _) => _timer.Stop();
     }
 
     private MainWindowViewModel ViewModel => (MainWindowViewModel)DataContext!;
@@ -21,6 +38,15 @@ public partial class MainWindow : Window
     private void EditTask(object? sender, RoutedEventArgs e)
     {
         ShowTaskDialog(ViewModel.CreateEditTask(CardOf(sender).Id));
+    }
+
+    private async void ReadTask(object? sender, RoutedEventArgs e)
+    {
+        var model = ViewModel.TaskDetails(CardOf(sender).Id);
+        if (model is not null)
+        {
+            await new TaskDetailsWindow { DataContext = model }.ShowDialog(this);
+        }
     }
 
     private void StartTask(object? sender, RoutedEventArgs e)
@@ -59,8 +85,11 @@ public partial class MainWindow : Window
         }
 
         var window = new AddTaskWindow { DataContext = dialog };
-        await window.ShowDialog<bool>(this);
+        var saved = await window.ShowDialog<bool>(this);
 
-        ViewModel.Refresh();
+        if (saved)
+        {
+            ViewModel.Refresh();
+        }
     }
 }

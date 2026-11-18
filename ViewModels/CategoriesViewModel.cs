@@ -50,15 +50,15 @@ public partial class CategoriesViewModel(ICategoryRepository repository) : PageV
     public void Refresh()
     {
         Run(() =>
-    {
-        Guid? selectedId = SelectedCategory?.Id;
-        Categories.Clear();
-        foreach (var category in repository.GetAll())
         {
-            Categories.Add(category);
-        }
-        SelectedCategory = Categories.FirstOrDefault(c => c.Id == selectedId);
-    });
+            Guid? selectedId = SelectedCategory?.Id;
+            Categories.Clear();
+            foreach (var category in repository.GetAll())
+            {
+                Categories.Add(category);
+            }
+            SelectedCategory = Categories.FirstOrDefault(c => c.Id == selectedId);
+        });
     }
 
     [RelayCommand]

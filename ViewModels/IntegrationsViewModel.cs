@@ -10,9 +10,9 @@ public partial class IntegrationsViewModel(Guid userId, Func<AppDbContext>? crea
     private readonly ConnectionStore _connections = new(userId, createContext);
     private CancellationTokenSource? _cancellation;
     [ObservableProperty]
-    public partial string GoogleClientId { get; set; } = Environment.GetEnvironmentVariable("CHRONIFY_GOOGLE_CLIENT_ID") ?? "";
+    public partial string GoogleClientId { get; set; } = NeonConfiguration.Read("CHRONIFY_GOOGLE_CLIENT_ID") ?? "";
     [ObservableProperty]
-    public partial string GoogleClientSecret { get; set; } = Environment.GetEnvironmentVariable("CHRONIFY_GOOGLE_CLIENT_SECRET") ?? "";
+    public partial string GoogleClientSecret { get; set; } = NeonConfiguration.Read("CHRONIFY_GOOGLE_CLIENT_SECRET") ?? "";
     [ObservableProperty]
     public partial string NotionToken { get; set; } = "";
     public bool HasClassroom => _connections.Find("Classroom") is not null;
@@ -33,28 +33,28 @@ public partial class IntegrationsViewModel(Guid userId, Func<AppDbContext>? crea
     private Task ConnectClassroom()
     {
         return RunAsync(async () =>
-    {
-        using var cancellation = _cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(3));
-        await new ClassroomProvider(userId, createContext).Connect(
-            GoogleClientId,
-            GoogleClientSecret,
-            cancellation.Token
-        );
-        Updated();
-    });
+        {
+            using var cancellation = _cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(3));
+            await new ClassroomProvider(userId, createContext).Connect(
+                GoogleClientId,
+                GoogleClientSecret,
+                cancellation.Token
+            );
+            Updated();
+        });
     }
 
     [RelayCommand]
     private Task ConnectNotion()
     {
         return RunAsync(async () =>
-    {
-        using var cancellation = _cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(1));
-        string token = NotionToken;
-        NotionToken = "";
-        await new NotionProvider(userId, createContext).Connect(token, cancellation.Token);
-        Updated();
-    });
+        {
+            using var cancellation = _cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(1));
+            string token = NotionToken;
+            NotionToken = "";
+            await new NotionProvider(userId, createContext).Connect(token, cancellation.Token);
+            Updated();
+        });
     }
 
     [RelayCommand]

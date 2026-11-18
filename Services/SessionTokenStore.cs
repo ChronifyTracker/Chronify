@@ -30,7 +30,8 @@ public class SessionTokenStore(string path) : ISessionTokenStore
         }
         catch (CryptographicException)
         {
-            Clear(); return null;
+            Clear();
+            return null;
         }
     }
 

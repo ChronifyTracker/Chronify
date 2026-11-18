@@ -1,11 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="using:Chronify.ViewModels"
-        xmlns:mi="using:Material.Icons.Avalonia"
-        x:Class="Chronify.Views.MainWindow"
-        x:DataType="vm:MainWindowViewModel"
-        Title="Chronify" Width="1200" Height="760"
-        MinWidth="820" MinHeight="560" WindowStartupLocation="CenterScreen">
+<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:Chronify.ViewModels" xmlns:mi="using:Material.Icons.Avalonia" xmlns:views="using:Chronify.Views" xmlns:model="using:Chronify" x:Class="Chronify.Views.MainWindow" x:DataType="vm:MainWindowViewModel" Title="Chronify" Width="1360" Height="850" MinWidth="1050" MinHeight="700" WindowStartupLocation="CenterScreen">
     <Window.DataTemplates>
         <DataTemplate DataType="vm:TaskCard">
             <Border Classes="panel" Padding="20" Margin="0,0,0,12">
@@ -19,14 +12,11 @@
                     <TextBlock Text="{Binding Title}" FontSize="17" FontWeight="SemiBold" TextWrapping="Wrap" />
                     <TextBlock Text="{Binding Description}" Classes="muted" TextWrapping="Wrap" IsVisible="{Binding HasDescription}" />
                     <Border Height="1" Background="#302A33" />
-                    <WrapPanel>
-                        <TextBlock Text="{Binding Details}" Classes="muted" FontSize="12" />
-                        <StackPanel Orientation="Horizontal" IsVisible="{Binding HasCategory}">
-                            <TextBlock Text="·" Classes="muted" FontSize="12" Margin="5,0" />
-                            <Ellipse Width="8" Height="8" Fill="{Binding CategoryColor}" Margin="1,0,6,0" />
-                            <TextBlock Text="{Binding Category}" Classes="muted" FontSize="12" />
-                        </StackPanel>
-                    </WrapPanel>
+                    <TextBlock Text="{Binding Details}" Classes="muted" FontSize="12" TextWrapping="Wrap" />
+                    <StackPanel Orientation="Horizontal" Spacing="6" IsVisible="{Binding HasCategory}">
+                        <Border Width="8" Height="8" CornerRadius="4" Background="{Binding CategoryColor}" />
+                        <TextBlock Text="{Binding Category}" Classes="muted" FontSize="12" />
+                    </StackPanel>
                 </StackPanel>
             </Border>
         </DataTemplate>
@@ -39,32 +29,40 @@
                     <TextBlock Text="chronify" FontSize="21" FontWeight="SemiBold" VerticalAlignment="Center" />
                 </StackPanel>
                 <StackPanel Spacing="8">
-                    <Button Content="Главная" Classes="nav" Classes.selected="{Binding IsHomePage}"
-                            Command="{Binding ShowHomeCommand}" />
-                    <Button Content="Все задачи" Classes="nav" Classes.selected="{Binding !IsHomePage}"
-                            Command="{Binding ShowAllCommand}" />
+                    <Button Content="Главная" Classes="nav" Classes.selected="{Binding IsHomePage}" Command="{Binding ShowHomeCommand}" />
+                    <Button Content="Все задачи" Classes="nav" Command="{Binding ShowAllCommand}" Classes.selected="{Binding IsTasksPage}" />
+                    <Button Content="Категории" Classes="nav" Classes.selected="{Binding IsCategoriesPage}" Command="{Binding ShowCategoriesCommand}" />
+                    <Button Content="План и нагрузка" Classes="nav" Classes.selected="{Binding IsPlanningPage}" Command="{Binding ShowPlanningCommand}" />
+                    <Button Content="Статистика" Classes="nav" Classes.selected="{Binding IsStatisticsPage}" Command="{Binding ShowStatisticsCommand}" />
+                    <Button Content="Учёт времени" Classes="nav" Classes.selected="{Binding IsWorkTimePage}" Command="{Binding ShowWorkTimeCommand}" />
+                    <Button Content="Личный кабинет" Classes="nav" Classes.selected="{Binding IsAccountPage}" Command="{Binding ShowAccountCommand}" />
+                    <Button Content="Группы" Classes="nav" Classes.selected="{Binding IsGroupsPage}" Command="{Binding ShowGroupsCommand}" />
                 </StackPanel>
             </StackPanel>
         </Border>
         <Grid Grid.Column="1" RowDefinitions="Auto,Auto,*" Margin="32,30">
             <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,26">
                 <StackPanel Spacing="6">
-                    <TextBlock Text="Главная" FontSize="30" FontWeight="SemiBold" IsVisible="{Binding IsHomePage}" />
-                    <TextBlock Text="Все задачи" FontSize="30" FontWeight="SemiBold" IsVisible="{Binding !IsHomePage}" />
+                    <TextBlock Text="{Binding PageTitle}" FontSize="30" FontWeight="SemiBold" />
                     <TextBlock Text="{Binding DateText}" Classes="muted" FontSize="13" />
                 </StackPanel>
-                <Button Grid.Column="1" Content="+  Добавить задачу" Classes="primary"
-                        VerticalAlignment="Center" Click="AddTask" />
+                <Button Grid.Column="1" Content="+  Добавить задачу" Classes="primary" VerticalAlignment="Center">
+                    <Button.Flyout>
+                        <MenuFlyout>
+                            <MenuItem Header="Вручную" Click="AddTask" />
+                            <MenuItem Header="Выбрать из Classroom" Command="{Binding ImportClassroomCommand}" IsEnabled="{Binding HasClassroom}" />
+                            <MenuItem Header="Выбрать из Notion" Command="{Binding ImportNotionCommand}" IsEnabled="{Binding HasNotion}" />
+                        </MenuFlyout>
+                    </Button.Flyout>
+                </Button>
             </Grid>
             <StackPanel Grid.Row="1">
-                <TextBlock Text="Не удалось загрузить задачи." Foreground="#FF8DA9"
-                           TextWrapping="Wrap" IsVisible="{Binding LoadFailed}" Margin="0,0,0,16" />
-                <TextBlock Text="{Binding ErrorMessage}" Foreground="#FF8DA9" TextWrapping="Wrap" Margin="0,0,0,16"
-                           IsVisible="{Binding ErrorMessage, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                <TextBlock Text="{Binding SessionNotice}" Foreground="#F2B45A" TextWrapping="Wrap" Margin="0,0,0,12" IsVisible="{Binding SessionNotice, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                <TextBlock Text="Не удалось загрузить задачи." Foreground="#FF8DA9" TextWrapping="Wrap" IsVisible="{Binding LoadFailed}" Margin="0,0,0,16" />
+                <TextBlock Text="{Binding ErrorMessage}" Foreground="#FF8DA9" TextWrapping="Wrap" Margin="0,0,0,16" IsVisible="{Binding ErrorMessage, Converter={x:Static ObjectConverters.IsNotNull}}" />
             </StackPanel>
             <Grid Grid.Row="2" IsVisible="{Binding !LoadFailed}">
-                <ScrollViewer HorizontalScrollBarVisibility="Disabled" Padding="0,0,8,0"
-                              IsVisible="{Binding IsHomePage}">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled" Padding="0,0,8,0" IsVisible="{Binding IsHomePage}">
                     <StackPanel Spacing="28">
                         <Grid ColumnDefinitions="*,16,*,16,*">
                             <Border Classes="panel" Padding="20,16">
@@ -88,8 +86,7 @@
                         </Grid>
                         <Grid ColumnDefinitions="*,24,*">
                             <StackPanel Spacing="16">
-                                <TextBlock Text="Срочные" Classes="section"
-                                           ToolTip.Tip="Высокий приоритет или срок в ближайшие 24 часа" />
+                                <TextBlock Text="Срочные" Classes="section" ToolTip.Tip="Высокий приоритет или срок в ближайшие 24 часа" />
                                 <TextBlock Text="Срочных задач нет" Classes="muted" IsVisible="{Binding !UrgentTasks.Count}" />
                                 <ItemsControl ItemsSource="{Binding UrgentTasks}" />
                             </StackPanel>
@@ -101,113 +98,127 @@
                         </Grid>
                     </StackPanel>
                 </ScrollViewer>
-                <Grid IsVisible="{Binding !IsHomePage}">
-                    <TextBlock Text="Задач пока нет" Classes="muted" IsVisible="{Binding !AllTasks.Count}" />
-                    <Grid RowDefinitions="Auto,*" IsVisible="{Binding !!AllTasks.Count}">
-                        <WrapPanel ItemSpacing="12" LineSpacing="12" Margin="0,0,0,16">
-                            <TextBox Text="{Binding SearchText}" Watermark="Поиск по названию" Width="190"
-                                     AutomationProperties.Name="Поиск" />
-                            <ComboBox ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}"
-                                      Width="170" AutomationProperties.Name="Фильтр по категории">
+                <Grid IsVisible="{Binding IsTasksPage}" RowDefinitions="Auto,Auto,*">
+                    <StackPanel Spacing="10" Margin="0,0,0,12">
+                        <Grid ColumnDefinitions="*,12,Auto">
+                            <TextBox Text="{Binding SearchText}" Watermark="Поиск по названию и описанию" />
+                            <Button Grid.Column="2" Content="Сбросить" Command="{Binding ResetFiltersCommand}" />
+                        </Grid>
+                        <Grid ColumnDefinitions="*,10,*,10,*,10,*">
+                            <ComboBox ItemsSource="{Binding FilterCategories}" SelectedItem="{Binding FilterCategory}" HorizontalAlignment="Stretch">
                                 <ComboBox.ItemTemplate>
                                     <DataTemplate x:DataType="vm:CategoryOption">
                                         <TextBlock Text="{Binding Name}" />
                                     </DataTemplate>
                                 </ComboBox.ItemTemplate>
                             </ComboBox>
-                            <ComboBox SelectedIndex="{Binding StatusIndex}" Width="150"
-                                      AutomationProperties.Name="Фильтр по статусу">
-                                <ComboBoxItem Content="Все статусы" />
-                                <ComboBoxItem Content="Новая" />
-                                <ComboBoxItem Content="В работе" />
-                                <ComboBoxItem Content="Завершена" />
-                                <ComboBoxItem Content="Просрочена" />
-                            </ComboBox>
-                            <ComboBox SelectedIndex="{Binding DueIndex}" Width="170"
-                                      AutomationProperties.Name="Фильтр по сроку">
-                                <ComboBoxItem Content="Любой срок" />
-                                <ComboBoxItem Content="Сегодня" />
-                                <ComboBoxItem Content="Ближайшие 3 дня" />
-                            </ComboBox>
-                            <Button Classes="icon" Command="{Binding ClearFiltersCommand}" VerticalAlignment="Center"
-                                    ToolTip.Tip="Сбросить фильтры" AutomationProperties.Name="Сбросить фильтры">
-                                <mi:MaterialIcon Kind="FilterOff" />
-                            </Button>
-                            <ComboBox SelectedIndex="{Binding SortIndex}" Width="160"
-                                      ToolTip.Tip="Сортировка" AutomationProperties.Name="Сортировка">
-                                <ComboBoxItem Content="По срочности" />
-                                <ComboBoxItem Content="По сроку" />
-                                <ComboBoxItem Content="По приоритету" />
-                                <ComboBoxItem Content="По категории" />
-                                <ComboBoxItem Content="По названию" />
-                                <ComboBoxItem Content="Сначала новые" />
-                            </ComboBox>
-                        </WrapPanel>
-                        <TextBlock Grid.Row="1" Text="Ничего не найдено" Classes="muted"
-                                   IsVisible="{Binding !FilteredTasks.Count}" />
-                        <Border Grid.Row="1" Classes="panel" VerticalAlignment="Top" IsVisible="{Binding !!FilteredTasks.Count}">
-                            <Border CornerRadius="11" ClipToBounds="True">
-                                <DataGrid ItemsSource="{Binding FilteredTasks}" IsReadOnly="True" CanUserSortColumns="False">
-                                    <DataGrid.Styles>
-                                        <Style Selector="DataGridRow" x:DataType="vm:TaskCard">
-                                            <Setter Property="ToolTip.Tip" Value="{Binding Tooltip}" />
-                                        </Style>
-                                    </DataGrid.Styles>
-                                    <DataGrid.Columns>
-                                        <DataGridTemplateColumn Header="Действия" CanUserResize="False">
-                                            <DataTemplate x:DataType="vm:TaskCard">
-                                                <StackPanel Orientation="Horizontal" Margin="4,0" VerticalAlignment="Center">
-                                                    <Button Classes="icon" Click="StartTask" IsEnabled="{Binding CanStart}"
-                                                            ToolTip.Tip="Начать" AutomationProperties.Name="Начать">
-                                                        <mi:MaterialIcon Kind="Play" />
-                                                    </Button>
-                                                    <Button Classes="icon" Click="CompleteTask" IsVisible="{Binding CanChange}"
-                                                            ToolTip.Tip="Завершить" AutomationProperties.Name="Завершить">
-                                                        <mi:MaterialIcon Kind="Check" />
-                                                    </Button>
-                                                    <Button Classes="icon" Click="ReopenTask" IsVisible="{Binding !CanChange}"
-                                                            ToolTip.Tip="Вернуть в работу" AutomationProperties.Name="Вернуть в работу">
-                                                        <mi:MaterialIcon Kind="Restore" />
-                                                    </Button>
-                                                    <Button Classes="icon" Click="EditTask" IsEnabled="{Binding CanChange}"
-                                                            ToolTip.Tip="Изменить" AutomationProperties.Name="Изменить">
-                                                        <mi:MaterialIcon Kind="Pencil" />
-                                                    </Button>
-                                                    <Button Classes="icon" ToolTip.Tip="Удалить" AutomationProperties.Name="Удалить">
-                                                        <mi:MaterialIcon Kind="Delete" />
-                                                        <Button.Flyout>
-                                                            <MenuFlyout>
-                                                                <MenuItem Header="Удалить задачу" Click="DeleteTask" />
-                                                            </MenuFlyout>
-                                                        </Button.Flyout>
-                                                    </Button>
-                                                </StackPanel>
-                                            </DataTemplate>
-                                        </DataGridTemplateColumn>
-                                        <DataGridTextColumn Header="Название" Binding="{Binding Title}" Width="*" MinWidth="160" />
-                                        <DataGridTemplateColumn Header="Срок">
-                                            <DataTemplate x:DataType="vm:TaskCard">
-                                                <TextBlock Text="{Binding DueDate}" Margin="12,0" VerticalAlignment="Center"
-                                                           Classes.overdue="{Binding IsOverdue}" Classes.soon="{Binding IsDueSoon}" />
-                                            </DataTemplate>
-                                        </DataGridTemplateColumn>
-                                        <DataGridTextColumn Header="Приоритет" Binding="{Binding Priority}" />
-                                        <DataGridTextColumn Header="Статус" Binding="{Binding Status}" />
-                                        <DataGridTemplateColumn Header="Категория" MaxWidth="180">
-                                            <DataTemplate x:DataType="vm:TaskCard">
-                                                <Panel IsVisible="{Binding HasCategory}">
-                                                    <Ellipse Width="8" Height="8" Fill="{Binding CategoryColor}"
-                                                             HorizontalAlignment="Left" Margin="12,0,0,0" />
-                                                    <TextBlock Text="{Binding Category}" Margin="28,0,12,0" VerticalAlignment="Center" />
-                                                </Panel>
-                                            </DataTemplate>
-                                        </DataGridTemplateColumn>
-                                        <DataGridTextColumn Header="Займёт" Binding="{Binding Estimate}" />
-                                    </DataGrid.Columns>
-                                </DataGrid>
-                            </Border>
-                        </Border>
+                            <ComboBox Grid.Column="2" ItemsSource="{Binding StatusFilters}" SelectedIndex="{Binding FilterStatusIndex}" HorizontalAlignment="Stretch" />
+                            <ComboBox Grid.Column="4" ItemsSource="{Binding PriorityFilters}" SelectedIndex="{Binding FilterPriorityIndex}" HorizontalAlignment="Stretch" />
+                            <ComboBox Grid.Column="6" ItemsSource="{Binding DateFilters}" SelectedIndex="{Binding FilterDateIndex}" HorizontalAlignment="Stretch" />
+                        </Grid>
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <TextBlock Text="Порядок:" VerticalAlignment="Center" />
+                            <ComboBox ItemsSource="{Binding SortOptions}" SelectedIndex="{Binding SortIndex}" Width="260" />
+                            <TextBlock Text="Оценка приоритета = важность + срочность + объём работы" Classes="muted" TextWrapping="Wrap" VerticalAlignment="Center" MaxWidth="420" />
+                        </StackPanel>
+                    </StackPanel>
+                    <Grid Grid.Row="1" ColumnDefinitions="*,8,Auto,16,*,8,Auto,8,Auto" Margin="0,0,0,16">
+                        <TextBox Text="{Binding PresetName}" Watermark="Название фильтра" MaxLength="50" />
+                        <Button Grid.Column="2" Content="Сохранить" Command="{Binding SavePresetCommand}" />
+                        <ComboBox Grid.Column="4" ItemsSource="{Binding Presets}" SelectedItem="{Binding SelectedPreset}" PlaceholderText="До 5 фильтров" HorizontalAlignment="Stretch">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="model:FilterPreset">
+                                    <TextBlock Text="{Binding Name}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                        <Button Grid.Column="6" Content="Применить" Command="{Binding ApplyPresetCommand}" />
+                        <Button Grid.Column="8" Content="Удалить" Command="{Binding DeletePresetCommand}" />
                     </Grid>
+                    <TextBlock Grid.Row="2" Text="Подходящих задач нет" Classes="muted" IsVisible="{Binding !AllTasks.Count}" />
+                    <Border Grid.Row="2" Classes="panel" VerticalAlignment="Top" IsVisible="{Binding !!AllTasks.Count}">
+                        <Border CornerRadius="11" ClipToBounds="True">
+                            <DataGrid ItemsSource="{Binding AllTasks}" IsReadOnly="True" CanUserSortColumns="False">
+                                <DataGrid.Styles>
+                                    <Style Selector="DataGridRow" x:DataType="vm:TaskCard">
+                                        <Setter Property="ToolTip.Tip" Value="{Binding Tooltip}" />
+                                    </Style>
+                                </DataGrid.Styles>
+                                <DataGrid.Columns>
+                                    <DataGridTemplateColumn Header="Действия" CanUserResize="False">
+                                        <DataTemplate x:DataType="vm:TaskCard">
+                                            <StackPanel Orientation="Horizontal" Margin="4,0" VerticalAlignment="Center">
+                                                <Button Classes="icon" Click="ReadTask" ToolTip.Tip="Условия и вложения" AutomationProperties.Name="Условия и вложения">
+                                                    <mi:MaterialIcon Kind="FileDocumentOutline" />
+                                                </Button>
+                                                <Button Classes="icon" Click="StartTask" IsEnabled="{Binding CanStart}" ToolTip.Tip="Начать" AutomationProperties.Name="Начать">
+                                                    <mi:MaterialIcon Kind="Play" />
+                                                </Button>
+                                                <Button Classes="icon" Click="CompleteTask" IsVisible="{Binding CanChange}" IsEnabled="{Binding CanComplete}" ToolTip.Tip="Завершить" AutomationProperties.Name="Завершить">
+                                                    <mi:MaterialIcon Kind="Check" />
+                                                </Button>
+                                                <Button Classes="icon" Click="ReopenTask" IsVisible="{Binding !CanChange}" IsEnabled="{Binding CanReopen}" ToolTip.Tip="Вернуть в работу" AutomationProperties.Name="Вернуть в работу">
+                                                    <mi:MaterialIcon Kind="Restore" />
+                                                </Button>
+                                                <Button Classes="icon" Click="EditTask" IsEnabled="{Binding CanEdit}" ToolTip.Tip="Изменить" AutomationProperties.Name="Изменить">
+                                                    <mi:MaterialIcon Kind="Pencil" />
+                                                </Button>
+                                                <Button Classes="icon" IsEnabled="{Binding CanDelete}" ToolTip.Tip="Удалить" AutomationProperties.Name="Удалить">
+                                                    <mi:MaterialIcon Kind="Delete" />
+                                                    <Button.Flyout>
+                                                        <MenuFlyout>
+                                                            <MenuItem Header="Удалить задачу" Click="DeleteTask" />
+                                                        </MenuFlyout>
+                                                    </Button.Flyout>
+                                                </Button>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTextColumn Header="Название" Binding="{Binding Title}" Width="*" MinWidth="160" />
+                                    <DataGridTemplateColumn Header="Срок">
+                                        <DataTemplate x:DataType="vm:TaskCard">
+                                            <TextBlock Text="{Binding DueDate}" Margin="12,0" VerticalAlignment="Center" Classes.overdue="{Binding IsOverdue}" Classes.soon="{Binding IsDueSoon}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTextColumn Header="Приоритет" Binding="{Binding Priority}" />
+                                    <DataGridTextColumn Header="Статус" Binding="{Binding Status}" />
+                                    <DataGridTextColumn Header="Постановщик" Binding="{Binding AssignedByName}" />
+                                    <DataGridTemplateColumn Header="Категория" MaxWidth="180">
+                                        <DataTemplate x:DataType="vm:TaskCard">
+                                            <StackPanel Orientation="Horizontal" Spacing="6" Margin="12,0" VerticalAlignment="Center">
+                                                <Border Background="{Binding CategoryColor}" Width="8" Height="8" CornerRadius="4" />
+                                                <TextBlock Text="{Binding Category}" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTextColumn Header="Займёт" Binding="{Binding Estimate}" />
+                                    <DataGridTextColumn Header="Факт, мин" Binding="{Binding ActualMinutes}" />
+                                    <DataGridTextColumn Header="Оценка" Binding="{Binding DynamicPriority}" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Border>
+                    </Border>
+                </Grid>
+                <Grid IsVisible="{Binding IsCategoriesPage}">
+                    <views:CategoriesView DataContext="{Binding CategoriesPage}" />
+                </Grid>
+                <Grid IsVisible="{Binding IsPlanningPage}">
+                    <views:PlanningView DataContext="{Binding PlanningPage}" />
+                </Grid>
+                <Grid IsVisible="{Binding IsStatisticsPage}">
+                    <views:StatisticsView DataContext="{Binding StatisticsPage}" />
+                </Grid>
+                <Grid IsVisible="{Binding IsWorkTimePage}">
+                    <views:WorkTimeView DataContext="{Binding WorkTimePage}" />
+                </Grid>
+                <Grid IsVisible="{Binding IsAccountPage}">
+                    <views:AccountView DataContext="{Binding AccountPage}" />
+                </Grid>
+                <Grid IsVisible="{Binding IsGroupsPage}">
+                    <views:GroupsView DataContext="{Binding GroupsPage}" />
+                </Grid>
+                <Grid IsVisible="{Binding IsImportPage}">
+                    <views:ImportView DataContext="{Binding ImportPage}" />
                 </Grid>
             </Grid>
         </Grid>

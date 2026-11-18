@@ -45,35 +45,35 @@ public partial class WorkTimeViewModel(
     public void Refresh()
     {
         Run(() =>
-    {
-        var allTasks = tasks.GetAll();
-        var allSessions = sessions.GetAll();
-        Guid? selectedId = SelectedTask?.Id;
-        Tasks.Clear();
-        Sessions.Clear();
-        Comparison.Clear();
-        foreach (var task in allTasks)
         {
-            Tasks.Add(new TaskChoice(task.Id, task.Title));
-        }
-        SelectedTask = Tasks.FirstOrDefault(t => t.Id == selectedId) ?? Tasks.FirstOrDefault();
-        var names = allTasks.ToDictionary(t => t.Id, t => t.Title);
-        foreach (var session in allSessions)
-        {
-            Sessions.Add(new WorkSessionRow(
-                session.Id,
-                names.GetValueOrDefault(session.TaskId, "Удалённая задача"),
-                session.StartedAt.ToString("dd.MM.yyyy"),
-                session.Minutes,
-                session.Note
-            ));
-        }
-        foreach (var task in allTasks)
-        {
-            Comparison.Add(new PlanFactRow(task.Title, task.EstimatedMinutes,
-                        allSessions.Where(s => s.TaskId == task.Id).Sum(s => s.Minutes)));
-        }
-    });
+            var allTasks = tasks.GetAll();
+            var allSessions = sessions.GetAll();
+            Guid? selectedId = SelectedTask?.Id;
+            Tasks.Clear();
+            Sessions.Clear();
+            Comparison.Clear();
+            foreach (var task in allTasks)
+            {
+                Tasks.Add(new TaskChoice(task.Id, task.Title));
+            }
+            SelectedTask = Tasks.FirstOrDefault(t => t.Id == selectedId) ?? Tasks.FirstOrDefault();
+            var names = allTasks.ToDictionary(t => t.Id, t => t.Title);
+            foreach (var session in allSessions)
+            {
+                Sessions.Add(new WorkSessionRow(
+                    session.Id,
+                    names.GetValueOrDefault(session.TaskId, "Удалённая задача"),
+                    session.StartedAt.ToString("dd.MM.yyyy"),
+                    session.Minutes,
+                    session.Note
+                ));
+            }
+            foreach (var task in allTasks)
+            {
+                Comparison.Add(new PlanFactRow(task.Title, task.EstimatedMinutes,
+                            allSessions.Where(s => s.TaskId == task.Id).Sum(s => s.Minutes)));
+            }
+        });
     }
 
     [RelayCommand]

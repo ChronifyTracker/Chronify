@@ -33,47 +33,47 @@ public partial class ImportViewModel(Guid userId, Func<AppDbContext>? createCont
     public Task Open(string provider)
     {
         return RunAsync(async () =>
-    {
-        ProviderName = provider;
-        Sources.Clear();
-        Tasks.Clear();
-        SelectedSource = null;
-        _provider = provider == "Classroom" ? new ClassroomProvider(userId, createContext) : new NotionProvider(
-            userId,
-            createContext
-        );
-        using var cancellation = _cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(2));
-        foreach (var source in await _provider.Sources(cancellation.Token))
         {
-            Sources.Add(source);
-        }
-        SelectedSource = Sources.FirstOrDefault();
-        Message = Sources.Count == 0 ? "Доступных источников нет. Для Notion откройте подключению доступ к таблице Tasks." : "Выберите курс или таблицу и загрузите задачи.";
-    });
+            ProviderName = provider;
+            Sources.Clear();
+            Tasks.Clear();
+            SelectedSource = null;
+            _provider = provider == "Classroom" ? new ClassroomProvider(userId, createContext) : new NotionProvider(
+                userId,
+                createContext
+            );
+            using var cancellation = _cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(2));
+            foreach (var source in await _provider.Sources(cancellation.Token))
+            {
+                Sources.Add(source);
+            }
+            SelectedSource = Sources.FirstOrDefault();
+            Message = Sources.Count == 0 ? "Доступных источников нет. Для Notion откройте подключению доступ к таблице Tasks." : "Выберите курс или таблицу и загрузите задачи.";
+        });
     }
 
     [RelayCommand]
     private Task LoadTasks()
     {
         return RunAsync(async () =>
-    {
-        if (_provider is null || !AllSources && SelectedSource is null)
         {
-            throw new ArgumentException("Выберите источник.");
-        }
-        using var cancellation = _cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(3));
-        var loaded = new List<ExternalTask>();
-        foreach (var source in AllSources ? Sources.ToList() : new List<ExternalTaskSource> { SelectedSource! })
-        {
-            loaded.AddRange(await _provider.Tasks(source, cancellation.Token));
-        }
-        Tasks.Clear();
-        foreach (var task in loaded.DistinctBy(t => t.Id))
-        {
-            Tasks.Add(new ImportRow(task));
-        }
-        Message = $"Найдено задач: {Tasks.Count}. Отметьте нужные или импортируйте все.";
-    });
+            if (_provider is null || !AllSources && SelectedSource is null)
+            {
+                throw new ArgumentException("Выберите источник.");
+            }
+            using var cancellation = _cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(3));
+            var loaded = new List<ExternalTask>();
+            foreach (var source in AllSources ? Sources.ToList() : new List<ExternalTaskSource> { SelectedSource! })
+            {
+                loaded.AddRange(await _provider.Tasks(source, cancellation.Token));
+            }
+            Tasks.Clear();
+            foreach (var task in loaded.DistinctBy(t => t.Id))
+            {
+                Tasks.Add(new ImportRow(task));
+            }
+            Message = $"Найдено задач: {Tasks.Count}. Отметьте нужные или импортируйте все.";
+        });
     }
 
     [RelayCommand]
@@ -107,29 +107,29 @@ public partial class ImportViewModel(Guid userId, Func<AppDbContext>? createCont
     private Task Import(bool all)
     {
         return RunAsync(async () =>
-    {
-        if (_provider is null)
         {
-            throw new ArgumentException("Сначала загрузите задачи.");
-        }
-        var selected = Tasks.Where(t => all || t.IsSelected).Select(t => t.Task).ToList();
-        if (selected.Count == 0)
-        {
-            throw new ArgumentException("Не выбрано ни одной задачи.");
-        }
-        using var cancellation = _cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(5));
-        int count = await new TaskImportService(userId, createContext).Import(
-            _provider,
-            selected,
-            cancellation.Token
-        );
-        foreach (var row in Tasks)
-        {
-            row.IsSelected = false;
-        }
-        Message = $"Добавлено: {count}. Уже импортированные задачи пропущены. Описания сохранены локально.";
-        DataChanged?.Invoke();
-    });
+            if (_provider is null)
+            {
+                throw new ArgumentException("Сначала загрузите задачи.");
+            }
+            var selected = Tasks.Where(t => all || t.IsSelected).Select(t => t.Task).ToList();
+            if (selected.Count == 0)
+            {
+                throw new ArgumentException("Не выбрано ни одной задачи.");
+            }
+            using var cancellation = _cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+            int count = await new TaskImportService(userId, createContext).Import(
+                _provider,
+                selected,
+                cancellation.Token
+            );
+            foreach (var row in Tasks)
+            {
+                row.IsSelected = false;
+            }
+            Message = $"Добавлено: {count}. Уже импортированные задачи пропущены. Описания сохранены локально.";
+            DataChanged?.Invoke();
+        });
     }
 
     [RelayCommand]

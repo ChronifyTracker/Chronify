@@ -3,6 +3,7 @@ obj/
 artifacts/
 .env
 .env.*
+!.env.example
 .neon
 
 .vs/

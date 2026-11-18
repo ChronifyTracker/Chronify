@@ -1,259 +1,497 @@
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Diagnostics;
 using System.Globalization;
-using Avalonia.Threading;
 using Chronify.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 namespace Chronify.ViewModels;
 
-public partial class MainWindowViewModel : ObservableObject
+public partial class MainWindowViewModel : PageViewModel
 {
-    private static readonly CategoryOption AllCategories = new("Все категории");
+    private readonly ITaskRepository _tasks;
+    private readonly ICategoryRepository _categories;
+    private readonly WorkSessionRepository _sessions;
+    private readonly FilterPresetRepository _presets;
+    private bool _changingFilters;
+    private readonly Guid _userId;
+    private readonly Func<AppDbContext>? _createContext;
+    public GroupsViewModel GroupsPage { get; }
+    public ImportViewModel ImportPage { get; }
+    public bool HasClassroom => AccountPage.Integrations.HasClassroom;
 
-    private readonly ITaskRepository _repository;
-    private readonly ICategoryRepository _categoryRepository;
-    private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromMinutes(1) };
-    private List<TaskItem> _tasks = [];
+    public bool HasNotion => AccountPage.Integrations.HasNotion;
 
+    public CategoriesViewModel CategoriesPage { get; }
+    public PlanningViewModel PlanningPage { get; }
+    public StatisticsViewModel StatisticsPage { get; }
+    public WorkTimeViewModel WorkTimePage { get; }
+    public AccountViewModel AccountPage { get; }
+    public string? SessionNotice { get; }
+    public event Action? LogoutRequested;
+
+    [ObservableProperty]
+    public partial int SelectedPage { get; set; }
     [ObservableProperty]
     public partial string DateText { get; set; } = "";
-
     [ObservableProperty]
     public partial bool LoadFailed { get; set; }
-
     [ObservableProperty]
-    public partial string? ErrorMessage { get; set; }
-
+    public partial string SearchText { get; set; } = "";
     [ObservableProperty]
-    public partial bool IsHomePage { get; set; } = true;
-
+    public partial CategoryOption? FilterCategory { get; set; }
     [ObservableProperty]
-    public partial string? SearchText { get; set; }
-
+    public partial int FilterStatusIndex { get; set; }
     [ObservableProperty]
-    public partial CategoryOption? SelectedCategory { get; set; } = AllCategories;
-
+    public partial int FilterPriorityIndex { get; set; }
     [ObservableProperty]
-    public partial int StatusIndex { get; set; } = (int)TaskStatusFilter.All;
-
+    public partial int FilterDateIndex { get; set; }
     [ObservableProperty]
-    public partial int DueIndex { get; set; } = (int)TaskDueFilter.All;
-
+    public partial int SortIndex { get; set; }
     [ObservableProperty]
-    public partial int SortIndex { get; set; } = (int)TaskSortOrder.Urgency;
+    public partial string PresetName { get; set; } = "";
+    [ObservableProperty]
+    public partial FilterPreset? SelectedPreset { get; set; }
 
+    public bool IsHomePage => SelectedPage == 0;
+
+    public bool IsTasksPage => SelectedPage == 1;
+
+    public bool IsCategoriesPage => SelectedPage == 2;
+
+    public bool IsPlanningPage => SelectedPage == 3;
+
+    public bool IsStatisticsPage => SelectedPage == 4;
+
+    public bool IsWorkTimePage => SelectedPage == 5;
+
+    public bool IsAccountPage => SelectedPage == 6;
+
+    public bool IsGroupsPage => SelectedPage == 7;
+
+    public bool IsImportPage => SelectedPage == 8;
+
+    public string PageTitle
+    {
+        get
+        {
+            return new[] { "Главная", "Все задачи", "Категории", "План и нагрузка", "Статистика", "Учёт времени", "Личный кабинет", "Группы", "Импорт задач" }[SelectedPage];
+        }
+    }
+
+    public IReadOnlyList<string> StatusFilters { get; } =
+
+    [
+
+        "Все статусы",
+
+        "Новые",
+
+        "В работе",
+
+        "Завершённые"
+
+    ];
+    public IReadOnlyList<string> PriorityFilters { get; } =
+
+    [
+
+        "Все приоритеты",
+
+        "Отложено",
+
+        "Низкий",
+
+        "Средний",
+
+        "Высокий",
+
+        "Критический"
+
+    ];
+    public IReadOnlyList<string> DateFilters { get; } =
+
+    [
+
+        "Все сроки",
+
+        "Сегодня",
+
+        "Ближайшие 3 дня",
+
+        "Просроченные"
+
+    ];
+    public IReadOnlyList<string> SortOptions { get; } =
+
+    [
+
+        "Ближайший срок (EDF)",
+
+        "Динамический приоритет",
+
+        "Важность",
+
+        "Сначала новые",
+
+        "Название",
+
+        "Категория",
+
+        "Срочность с учётом объёма"
+
+    ];
+    public ObservableCollection<CategoryOption> FilterCategories { get; } = [];
+    public ObservableCollection<FilterPreset> Presets { get; } = [];
     public ObservableCollection<TaskCard> UrgentTasks { get; } = [];
     public ObservableCollection<TaskCard> NewTasks { get; } = [];
     public ObservableCollection<TaskCard> AllTasks { get; } = [];
-    public ObservableCollection<TaskCard> FilteredTasks { get; } = [];
-    public ObservableCollection<CategoryOption> Categories { get; } = [AllCategories];
 
-    public MainWindowViewModel(ITaskRepository repository, ICategoryRepository categoryRepository)
+    public MainWindowViewModel(
+        UserAccount user,
+        ITaskRepository tasks,
+        ICategoryRepository categories,
+        WorkSessionRepository sessions,
+        FilterPresetRepository presets,
+        UserPreferencesRepository preferences,
+        AuthenticationService authentication,
+        Func<AppDbContext>? createContext = null
+    )
     {
-        _repository = repository;
-        _categoryRepository = categoryRepository;
+        _tasks = tasks;
+        _userId = user.Id;
+        _createContext = createContext;
+        _categories = categories;
+        _sessions = sessions;
+        _presets = presets;
+        CategoriesPage = new CategoriesViewModel(categories);
+        PlanningPage = new PlanningViewModel(tasks, preferences);
+        StatisticsPage = new StatisticsViewModel(tasks, sessions);
+        WorkTimePage = new WorkTimeViewModel(user.Id, tasks, sessions);
+        AccountPage = new AccountViewModel(user, authentication, createContext);
+        GroupsPage = new GroupsViewModel(user, createContext);
+        ImportPage = new ImportViewModel(user.Id, createContext);
+        GroupsPage.DataChanged += Refresh;
+        ImportPage.DataChanged += Refresh;
+        AccountPage.Integrations.ConnectionsChanged += () =>
+        {
+            OnPropertyChanged(nameof(HasClassroom));
+            OnPropertyChanged(nameof(HasNotion));
+        };
+        SessionNotice = authentication.SessionNotice;
+        CategoriesPage.DataChanged += Refresh;
+        WorkTimePage.DataChanged += Refresh;
+        AccountPage.LogoutRequested += () => LogoutRequested?.Invoke();
         Refresh();
+    }
 
-        _timer.Tick += (_, _) => Refresh();
-        _timer.Start();
+    partial void OnSelectedPageChanged(int value)
+    {
+        foreach (string property in new[] { nameof(IsHomePage), nameof(IsTasksPage), nameof(IsCategoriesPage),
+            nameof(IsPlanningPage), nameof(IsStatisticsPage), nameof(IsWorkTimePage), nameof(IsAccountPage),
+            nameof(IsGroupsPage), nameof(IsImportPage), nameof(PageTitle) })
+        {
+            OnPropertyChanged(property);
+        }
+    }
+    partial void OnSearchTextChanged(string value)
+    {
+        RefreshFilteredTasks();
+    }
+
+    partial void OnFilterCategoryChanged(CategoryOption? value)
+    {
+        RefreshFilteredTasks();
+    }
+
+    partial void OnFilterStatusIndexChanged(int value)
+    {
+        RefreshFilteredTasks();
+    }
+
+    partial void OnFilterPriorityIndexChanged(int value)
+    {
+        RefreshFilteredTasks();
+    }
+
+    partial void OnFilterDateIndexChanged(int value)
+    {
+        RefreshFilteredTasks();
+    }
+
+    partial void OnSortIndexChanged(int value)
+    {
+        RefreshFilteredTasks();
     }
 
     public void Refresh()
     {
         DateText = DateTime.Now.ToString("dddd, d MMMM", CultureInfo.GetCultureInfo("ru-RU"));
-
-        try
+        Run(() =>
         {
-            _tasks = _repository.GetAll();
-
-            var urgent = _tasks.Where(task => task.IsUrgent);
-            var newTasks = new TaskFilter { Status = TaskStatusFilter.New }.Apply(_tasks);
-
-            Fill(UrgentTasks, TaskSorter.SortByUrgency(urgent));
-            Fill(NewTasks, newTasks);
-            Fill(AllTasks, _tasks);
-            ApplyFilters();
+            _changingFilters = true;
+            try
+            {
+                Guid? categoryId = FilterCategory?.Category?.Id;
+                FilterCategories.Clear();
+                FilterCategories.Add(new CategoryOption("Все категории"));
+                foreach (var category in _categories.GetAll())
+                {
+                    FilterCategories.Add(new CategoryOption(category.Name, category));
+                }
+                FilterCategory = FilterCategories.FirstOrDefault(c => c.Category?.Id == categoryId) ?? FilterCategories[0];
+                Presets.Clear();
+                foreach (var preset in _presets.GetAll())
+                {
+                    Presets.Add(preset);
+                }
+            }
+            finally
+            {
+                _changingFilters = false;
+            }
+            var overview = new TaskOverviewService(_tasks).GetOverview(DateTime.Now);
+            Fill(UrgentTasks, overview.Urgent);
+            Fill(NewTasks, overview.New);
+            Fill(AllTasks, _tasks.GetAll(BuildQuery()));
             LoadFailed = false;
-        }
-        catch (Exception ex)
+        });
+        if (ErrorMessage is not null)
         {
-            Debug.WriteLine(ex);
             LoadFailed = true;
+        }
+    }
+
+    public TaskQuery BuildQuery()
+    {
+        return new()
+        {
+            Search = SearchText,
+            CategoryId = FilterCategory?.Category?.Id,
+            Status = FilterStatusIndex == 0 ? null : (TaskStatus)(FilterStatusIndex - 1),
+            Priority = FilterPriorityIndex == 0 ? null : (TaskPriority)(FilterPriorityIndex - 1),
+            DateFilter = (TaskDateFilter)FilterDateIndex,
+            SortBy = SortIndex switch
+            {
+                1 => TaskSortBy.DynamicPriority,
+                2 => TaskSortBy.Priority,
+                3 => TaskSortBy.CreatedAt,
+                4 => TaskSortBy.Title,
+                5 => TaskSortBy.Category,
+                6 => TaskSortBy.WeightedUrgency,
+                _ => TaskSortBy.Edf
+            },
+            SortDescending = SortIndex is 2 or 3
+        };
+    }
+
+    private void RefreshFilteredTasks()
+    {
+        if (!_changingFilters)
+        {
+            Run(() => Fill(AllTasks, _tasks.GetAll(BuildQuery())));
+        }
+    }
+
+    [RelayCommand]
+    private void ResetFilters()
+    {
+        _changingFilters = true;
+        SearchText = "";
+        FilterCategory = FilterCategories.FirstOrDefault();
+        FilterStatusIndex = 0;
+        FilterPriorityIndex = 0;
+        FilterDateIndex = 0;
+        SortIndex = 0;
+        _changingFilters = false;
+        RefreshFilteredTasks();
+    }
+
+    [RelayCommand]
+    private void SavePreset()
+    {
+        if (Run(() => _presets.Save(PresetName, BuildQuery())))
+        {
+            PresetName = "";
+            Refresh();
+        }
+    }
+    [RelayCommand]
+    private void DeletePreset()
+    {
+        if (SelectedPreset is null)
+        {
+            ErrorMessage = "Выберите сохранённый фильтр.";
+            return;
+        }
+        if (Run(() => _presets.Delete(SelectedPreset.Id)))
+        {
+            Refresh();
+        }
+    }
+    [RelayCommand]
+    private void ApplyPreset()
+    {
+        if (SelectedPreset is null)
+        {
             return;
         }
 
-        LoadCategories();
+        var query = SelectedPreset.ToQuery();
+        _changingFilters = true;
+        SearchText = query.Search ?? "";
+        FilterCategory = FilterCategories.FirstOrDefault(c => c.Category?.Id == query.CategoryId) ?? FilterCategories.First();
+        FilterStatusIndex = query.Status is TaskStatus status ? (int)status + 1 : 0;
+        FilterPriorityIndex = query.Priority is TaskPriority priority ? (int)priority + 1 : 0;
+        FilterDateIndex = (int)query.DateFilter;
+        SortIndex = query.SortBy switch
+        {
+            TaskSortBy.DynamicPriority => 1,
+            TaskSortBy.Priority => 2,
+            TaskSortBy.CreatedAt => 3,
+            TaskSortBy.Title => 4,
+            TaskSortBy.Category => 5,
+            TaskSortBy.WeightedUrgency => 6,
+            _ => 0
+        };
+        _changingFilters = false;
+        RefreshFilteredTasks();
     }
 
     public AddTaskViewModel CreateAddTask()
     {
-        return new AddTaskViewModel(_repository, _categoryRepository);
+        return new(_tasks, _categories);
     }
 
-    public AddTaskViewModel? CreateEditTask(Guid taskId)
+    public TaskDetailsViewModel? TaskDetails(Guid id)
     {
-        try
-        {
-            var task = _repository.GetById(taskId);
+        var task = _tasks.GetById(id);
+        return task is null ? null : new TaskDetailsViewModel(task, _userId, _createContext);
+    }
+    public AddTaskViewModel? CreateEditTask(Guid id)
+    {
+        var task = _tasks.GetById(id);
+        return task is null || task.Status == TaskStatus.Completed || task.GroupAssignmentId is not null ? null : new AddTaskViewModel(
+            _tasks,
+            _categories,
+            task
+        );
+    }
+    public void StartTask(Guid id)
+    {
+        ChangeTask(id, t => t.StartTask());
+    }
 
-            if (task is null || task.Status == TaskStatus.Completed)
+    public void CompleteTask(Guid id)
+    {
+        ChangeTask(id, t => t.CompleteTask());
+    }
+
+    public void ReopenTask(Guid id)
+    {
+        ChangeTask(id, t => t.ReopenTask());
+    }
+
+    public void DeleteTask(Guid id)
+    {
+        if (Run(() => _tasks.Delete(id)))
+        {
+            Refresh();
+        }
+    }
+    private void ChangeTask(Guid id, Action<TaskItem> change)
+    {
+        if (Run(() =>
+        {
+            var task = _tasks.GetById(id) ?? throw new InvalidOperationException("Задача уже удалена.");
+            change(task);
+            if (!_tasks.Update(task))
             {
-                return null;
+                throw new InvalidOperationException("Задача уже удалена.");
             }
-
-            return new AddTaskViewModel(_repository, _categoryRepository, task);
-        }
-        catch (Exception ex)
+        }))
         {
-            Debug.WriteLine(ex);
-            return null;
+            Refresh();
         }
     }
-
-    public void StartTask(Guid taskId)
-    {
-        ChangeTask(taskId, task => task.StartTask());
-    }
-
-    public void CompleteTask(Guid taskId)
-    {
-        ChangeTask(taskId, task => task.CompleteTask());
-    }
-
-    public void ReopenTask(Guid taskId)
-    {
-        ChangeTask(taskId, task => task.ReopenTask());
-    }
-
-    public void DeleteTask(Guid taskId)
-    {
-        ErrorMessage = null;
-
-        try
-        {
-            _repository.Delete(taskId);
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine(ex);
-            ErrorMessage = "Не удалось удалить задачу.";
-        }
-
-        Refresh();
-    }
-
     [RelayCommand]
     private void ShowHome()
     {
-        IsHomePage = true;
-        ErrorMessage = null;
+        SelectedPage = 0;
         Refresh();
     }
-
     [RelayCommand]
     private void ShowAll()
     {
-        IsHomePage = false;
-        ErrorMessage = null;
+        SelectedPage = 1;
         Refresh();
+    }
+    [RelayCommand]
+    private void ShowCategories()
+    {
+        SelectedPage = 2;
+        CategoriesPage.Refresh();
+    }
+    [RelayCommand]
+    private void ShowPlanning()
+    {
+        SelectedPage = 3;
+        PlanningPage.Refresh();
+    }
+    [RelayCommand]
+    private void ShowStatistics()
+    {
+        SelectedPage = 4;
+        StatisticsPage.Refresh();
+    }
+    [RelayCommand]
+    private void ShowWorkTime()
+    {
+        SelectedPage = 5;
+        WorkTimePage.Refresh();
+    }
+    [RelayCommand]
+    private void ShowAccount()
+    {
+        SelectedPage = 6;
     }
 
     [RelayCommand]
-    private void ClearFilters()
+    private void ShowGroups()
     {
-        SearchText = null;
-        SelectedCategory = AllCategories;
-        StatusIndex = (int)TaskStatusFilter.All;
-        DueIndex = (int)TaskDueFilter.All;
+        SelectedPage = 7;
+        GroupsPage.RefreshCache();
+    }
+    [RelayCommand]
+    private Task ImportClassroom()
+    {
+        return OpenImport("Classroom");
     }
 
-    protected override void OnPropertyChanged(PropertyChangedEventArgs e)
+    [RelayCommand]
+    private Task ImportNotion()
     {
-        base.OnPropertyChanged(e);
-
-        if (e.PropertyName is nameof(SearchText) or nameof(SelectedCategory)
-            or nameof(StatusIndex) or nameof(DueIndex) or nameof(SortIndex))
-        {
-            ApplyFilters();
-        }
+        return OpenImport("Notion");
     }
 
-    private void ApplyFilters()
+    private async Task OpenImport(string provider)
     {
-        var filter = new TaskFilter
-        {
-            Search = SearchText,
-            CategoryId = SelectedCategory?.Category?.Id,
-            Status = (TaskStatusFilter)StatusIndex,
-            Due = (TaskDueFilter)DueIndex
-        };
-
-        var filteredTasks = filter.Apply(_tasks);
-
-        Fill(FilteredTasks, TaskSorter.Sort(filteredTasks, (TaskSortOrder)SortIndex));
+        SelectedPage = 8;
+        await ImportPage.Open(provider);
     }
 
-    private void LoadCategories()
+    private void Fill(ObservableCollection<TaskCard> cards, IEnumerable<TaskItem> tasks)
     {
-        try
-        {
-            var categories = _categoryRepository.GetAll();
-
-            for (var i = 0; i < categories.Count; i++)
-            {
-                var category = categories[i];
-
-                if (!Categories.Any(option => option.Category?.Id == category.Id))
-                {
-                    Categories.Insert(i + 1, new CategoryOption(category.Name, category));
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine(ex);
-            ErrorMessage = "Не удалось загрузить категории.";
-        }
-    }
-
-    private void ChangeTask(Guid taskId, Action<TaskItem> change)
-    {
-        ErrorMessage = null;
-
-        try
-        {
-            var task = _repository.GetById(taskId);
-
-            if (task is not null)
-            {
-                change(task);
-                _repository.Update(task);
-            }
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine(ex);
-            ErrorMessage = "Не удалось изменить задачу.";
-        }
-
-        Refresh();
-    }
-
-    private static void Fill(ObservableCollection<TaskCard> cards, IEnumerable<TaskItem> tasks)
-    {
-        var newCards = tasks.Select(task => new TaskCard(task)).ToList();
-        if (newCards.SequenceEqual(cards))
+        var totals = _sessions.GetAll().GroupBy(s => s.TaskId).ToDictionary(g => g.Key, g => g.Sum(s => s.Minutes));
+        var values = tasks.Select(t => new TaskCard(t, totals.GetValueOrDefault(t.Id))).ToList();
+        if (values.SequenceEqual(cards))
         {
             return;
         }
 
         cards.Clear();
-        foreach (var card in newCards)
+        foreach (var value in values)
         {
-            cards.Add(card);
+            cards.Add(value);
         }
     }
 }

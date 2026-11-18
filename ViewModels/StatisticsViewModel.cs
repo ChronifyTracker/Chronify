@@ -36,32 +36,32 @@ public partial class StatisticsViewModel(ITaskRepository tasks, WorkSessionRepos
     public void Refresh()
     {
         Run(() =>
-    {
-        DateTime date = (SelectedDate ?? DateTime.Today).Date;
-        DateTime from = PeriodIndex switch
         {
-            1 => date.AddDays(-(((int)date.DayOfWeek + 6) % 7)),
-            2 => new DateTime(date.Year, date.Month, 1),
-            _ => date
-        };
-        DateTime to = PeriodIndex == 2 ? from.AddMonths(1) : from.AddDays(PeriodIndex == 1 ? 7 : 1);
-        var result = new StatisticsService().Calculate(
-            tasks.GetAll(),
-            sessions.GetAll(),
-            from,
-            to,
-            DateTime.Now
-        );
-        Active = result.Active;
-        Overdue = result.Overdue;
-        Completed = result.Completed;
-        OnTimeRate = result.OnTimeRate;
-        PeriodLabel = $"{from:dd.MM.yyyy} — {to.AddDays(-1):dd.MM.yyyy}";
-        Categories.Clear();
-        foreach (var row in result.Categories)
-        {
-            Categories.Add(row);
-        }
-    });
+            DateTime date = (SelectedDate ?? DateTime.Today).Date;
+            DateTime from = PeriodIndex switch
+            {
+                1 => date.AddDays(-(((int)date.DayOfWeek + 6) % 7)),
+                2 => new DateTime(date.Year, date.Month, 1),
+                _ => date
+            };
+            DateTime to = PeriodIndex == 2 ? from.AddMonths(1) : from.AddDays(PeriodIndex == 1 ? 7 : 1);
+            var result = new StatisticsService().Calculate(
+                tasks.GetAll(),
+                sessions.GetAll(),
+                from,
+                to,
+                DateTime.Now
+            );
+            Active = result.Active;
+            Overdue = result.Overdue;
+            Completed = result.Completed;
+            OnTimeRate = result.OnTimeRate;
+            PeriodLabel = $"{from:dd.MM.yyyy} — {to.AddDays(-1):dd.MM.yyyy}";
+            Categories.Clear();
+            foreach (var row in result.Categories)
+            {
+                Categories.Add(row);
+            }
+        });
     }
 }

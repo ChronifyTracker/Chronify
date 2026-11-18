@@ -19,3 +19,13 @@ jobs:
 
       - name: Run tests
         run: dotnet test Chronify.Tests
+
+  desktop-checks:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Check desktop workflows and protected local sessions
+        run: dotnet run --project Tests/Chronify.Checks.csproj
