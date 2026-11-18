@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:Chronify.ViewModels"
+        xmlns:mi="using:Material.Icons.Avalonia"
         x:Class="Chronify.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="Chronify" Width="1120" Height="760"
@@ -118,8 +119,7 @@
                                         <DataTemplate x:DataType="vm:TaskCard">
                                             <Button Classes="icon" Margin="4,0" VerticalAlignment="Center" Click="EditTask"
                                                     ToolTip.Tip="Изменить" AutomationProperties.Name="Изменить">
-                                                <PathIcon Data="{StaticResource EditIcon}" Width="14" Height="14"
-                                                          Foreground="{StaticResource MutedBrush}" />
+                                                <mi:MaterialIcon Kind="Pencil" />
                                             </Button>
                                         </DataTemplate>
                                     </DataGridTemplateColumn>
