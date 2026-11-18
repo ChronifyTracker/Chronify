@@ -23,26 +23,6 @@ public partial class MainWindow : Window
         Closed += (_, _) => _timer.Stop();
     }
 
-    private void ShowHome(object? sender, RoutedEventArgs e)
-    {
-        HomePanel.IsVisible = true;
-        AllPanel.IsVisible = false;
-        PageTitle.Text = "Главная";
-        HomeButton.Classes.Add("selected");
-        AllButton.Classes.Remove("selected");
-        _viewModel.Refresh();
-    }
-
-    private void ShowAll(object? sender, RoutedEventArgs e)
-    {
-        HomePanel.IsVisible = false;
-        AllPanel.IsVisible = true;
-        PageTitle.Text = "Все задачи";
-        HomeButton.Classes.Remove("selected");
-        AllButton.Classes.Add("selected");
-        _viewModel.Refresh();
-    }
-
     private async void AddTask(object? sender, RoutedEventArgs e)
     {
         var window = new AddTaskWindow(_repository);

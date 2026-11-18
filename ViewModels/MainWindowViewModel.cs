@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace Chronify.ViewModels;
 
@@ -9,10 +10,13 @@ public partial class MainWindowViewModel : ObservableObject
     private readonly ITaskRepository _repository;
 
     [ObservableProperty]
-    private string _dateText = "";
+    public partial string DateText { get; set; } = "";
 
     [ObservableProperty]
-    private bool _loadFailed;
+    public partial bool LoadFailed { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsHomePage { get; set; } = true;
 
     public ObservableCollection<TaskCard> UrgentTasks { get; } = [];
     public ObservableCollection<TaskCard> NewTasks { get; } = [];
@@ -50,6 +54,20 @@ public partial class MainWindowViewModel : ObservableObject
         {
             LoadFailed = true;
         }
+    }
+
+    [RelayCommand]
+    private void ShowHome()
+    {
+        IsHomePage = true;
+        Refresh();
+    }
+
+    [RelayCommand]
+    private void ShowAll()
+    {
+        IsHomePage = false;
+        Refresh();
     }
 
     private static void Fill(ObservableCollection<TaskCard> cards, IEnumerable<TaskItem> tasks)
