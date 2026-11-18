@@ -4,7 +4,7 @@
         xmlns:mi="using:Material.Icons.Avalonia"
         x:Class="Chronify.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
-        Title="Chronify" Width="1120" Height="760"
+        Title="Chronify" Width="1200" Height="760"
         MinWidth="820" MinHeight="560" WindowStartupLocation="CenterScreen">
     <Window.DataTemplates>
         <DataTemplate DataType="vm:TaskCard">
@@ -52,8 +52,12 @@
                 <Button Grid.Column="1" Content="+  Добавить задачу" Classes="primary"
                         VerticalAlignment="Center" Click="AddTask" />
             </Grid>
-            <TextBlock Grid.Row="1" Text="Не удалось загрузить задачи." Foreground="#FF8DA9"
-                       TextWrapping="Wrap" IsVisible="{Binding LoadFailed}" Margin="0,0,0,16" />
+            <StackPanel Grid.Row="1">
+                <TextBlock Text="Не удалось загрузить задачи." Foreground="#FF8DA9"
+                           TextWrapping="Wrap" IsVisible="{Binding LoadFailed}" Margin="0,0,0,16" />
+                <TextBlock Text="{Binding ErrorMessage}" Foreground="#FF8DA9" TextWrapping="Wrap" Margin="0,0,0,16"
+                           IsVisible="{Binding ErrorMessage, Converter={x:Static ObjectConverters.IsNotNull}}" />
+            </StackPanel>
             <Grid Grid.Row="2" IsVisible="{Binding !LoadFailed}">
                 <ScrollViewer HorizontalScrollBarVisibility="Disabled" Padding="0,0,8,0"
                               IsVisible="{Binding IsHomePage}">
@@ -104,6 +108,36 @@
                                     </Style>
                                 </DataGrid.Styles>
                                 <DataGrid.Columns>
+                                    <DataGridTemplateColumn Header="Действия" CanUserResize="False">
+                                        <DataTemplate x:DataType="vm:TaskCard">
+                                            <StackPanel Orientation="Horizontal" Margin="4,0" VerticalAlignment="Center">
+                                                <Button Classes="icon" Click="StartTask" IsEnabled="{Binding CanStart}"
+                                                        ToolTip.Tip="Начать" AutomationProperties.Name="Начать">
+                                                    <mi:MaterialIcon Kind="Play" />
+                                                </Button>
+                                                <Button Classes="icon" Click="CompleteTask" IsVisible="{Binding CanChange}"
+                                                        ToolTip.Tip="Завершить" AutomationProperties.Name="Завершить">
+                                                    <mi:MaterialIcon Kind="Check" />
+                                                </Button>
+                                                <Button Classes="icon" Click="ReopenTask" IsVisible="{Binding !CanChange}"
+                                                        ToolTip.Tip="Вернуть в работу" AutomationProperties.Name="Вернуть в работу">
+                                                    <mi:MaterialIcon Kind="Restore" />
+                                                </Button>
+                                                <Button Classes="icon" Click="EditTask" IsEnabled="{Binding CanChange}"
+                                                        ToolTip.Tip="Изменить" AutomationProperties.Name="Изменить">
+                                                    <mi:MaterialIcon Kind="Pencil" />
+                                                </Button>
+                                                <Button Classes="icon" ToolTip.Tip="Удалить" AutomationProperties.Name="Удалить">
+                                                    <mi:MaterialIcon Kind="Delete" />
+                                                    <Button.Flyout>
+                                                        <MenuFlyout>
+                                                            <MenuItem Header="Удалить задачу" Click="DeleteTask" />
+                                                        </MenuFlyout>
+                                                    </Button.Flyout>
+                                                </Button>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn>
                                     <DataGridTextColumn Header="Название" Binding="{Binding Title}" Width="*" MinWidth="160" />
                                     <DataGridTemplateColumn Header="Срок">
                                         <DataTemplate x:DataType="vm:TaskCard">
@@ -115,14 +149,6 @@
                                     <DataGridTextColumn Header="Статус" Binding="{Binding Status}" />
                                     <DataGridTextColumn Header="Категория" Binding="{Binding Category}" MaxWidth="180" />
                                     <DataGridTextColumn Header="Займёт, мин" Binding="{Binding EstimatedMinutes}" />
-                                    <DataGridTemplateColumn CanUserResize="False">
-                                        <DataTemplate x:DataType="vm:TaskCard">
-                                            <Button Classes="icon" Margin="4,0" VerticalAlignment="Center" Click="EditTask"
-                                                    ToolTip.Tip="Изменить" AutomationProperties.Name="Изменить">
-                                                <mi:MaterialIcon Kind="Pencil" />
-                                            </Button>
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn>
                                 </DataGrid.Columns>
                             </DataGrid>
                         </Border>

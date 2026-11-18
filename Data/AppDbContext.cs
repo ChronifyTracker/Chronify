@@ -15,7 +15,7 @@ namespace Chronify
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlite("Data Source=chronify.db");
+            optionsBuilder.UseSqlite("Data Source=chronify.db;Default Timeout=2");
         }
     }
 }

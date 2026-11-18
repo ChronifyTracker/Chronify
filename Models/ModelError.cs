@@ -4,6 +4,7 @@ namespace Chronify
     {
         TaskTitleRequired,
         EstimatedMinutesOutOfRange,
+        TaskCompleted,
         CategoryNameRequired,
         CategoryNameTaken,
         CategoryColorRequired

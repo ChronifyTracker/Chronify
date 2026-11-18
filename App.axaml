@@ -44,7 +44,13 @@
         <Style Selector="Button.icon">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="Foreground" Value="{StaticResource MutedBrush}" />
-            <Setter Property="Padding" Value="8" />
+            <Setter Property="Padding" Value="6" />
+        </Style>
+        <Style Selector="Button.icon:disabled">
+            <Setter Property="Opacity" Value="0.25" />
+        </Style>
+        <Style Selector="Button.icon:disabled /template/ ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
         </Style>
         <Style Selector="Button.icon mi|MaterialIcon">
             <Setter Property="Width" Value="16" />

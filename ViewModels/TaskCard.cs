@@ -15,6 +15,8 @@ public record TaskCard
     public string EstimatedMinutes { get; }
     public bool IsOverdue { get; }
     public bool IsDueSoon { get; }
+    public bool CanStart { get; }
+    public bool CanChange { get; }
 
     public TaskCard(TaskItem task)
     {
@@ -40,10 +42,13 @@ public record TaskCard
         EstimatedMinutes = task.EstimatedMinutes > 0 ? task.EstimatedMinutes.ToString() : "";
         IsOverdue = task.IsOverdue;
         IsDueSoon = task.IsDueSoon;
+        CanStart = task.Status == TaskStatus.New;
+        CanChange = task.Status != TaskStatus.Completed;
+
+        if (IsOverdue)
+            Status = "Просрочена";
 
         Details = DueDate;
-        if (IsOverdue)
-            Details = "Просрочена · " + Details;
         if (EstimatedMinutes.Length > 0)
             Details += $" · {EstimatedMinutes} мин";
         if (Category.Length > 0)
