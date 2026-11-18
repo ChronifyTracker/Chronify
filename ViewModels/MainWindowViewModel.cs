@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Globalization;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -8,6 +10,7 @@ namespace Chronify.ViewModels;
 public partial class MainWindowViewModel : ObservableObject
 {
     private readonly ITaskRepository _repository;
+    private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromMinutes(1) };
 
     [ObservableProperty]
     public partial string DateText { get; set; } = "";
@@ -26,6 +29,9 @@ public partial class MainWindowViewModel : ObservableObject
     {
         _repository = repository;
         Refresh();
+
+        _timer.Tick += (_, _) => Refresh();
+        _timer.Start();
     }
 
     public void Refresh()
@@ -50,10 +56,16 @@ public partial class MainWindowViewModel : ObservableObject
             Fill(AllTasks, tasks);
             LoadFailed = false;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Debug.WriteLine(ex);
             LoadFailed = true;
         }
+    }
+
+    public AddTaskViewModel CreateAddTask()
+    {
+        return new AddTaskViewModel(_repository);
     }
 
     [RelayCommand]
