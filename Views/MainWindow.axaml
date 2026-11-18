@@ -19,7 +19,14 @@
                     <TextBlock Text="{Binding Title}" FontSize="17" FontWeight="SemiBold" TextWrapping="Wrap" />
                     <TextBlock Text="{Binding Description}" Classes="muted" TextWrapping="Wrap" IsVisible="{Binding HasDescription}" />
                     <Border Height="1" Background="#302A33" />
-                    <TextBlock Text="{Binding Details}" Classes="muted" FontSize="12" TextWrapping="Wrap" />
+                    <WrapPanel>
+                        <TextBlock Text="{Binding Details}" Classes="muted" FontSize="12" />
+                        <StackPanel Orientation="Horizontal" IsVisible="{Binding HasCategory}">
+                            <TextBlock Text="·" Classes="muted" FontSize="12" Margin="5,0" />
+                            <Ellipse Width="8" Height="8" Fill="{Binding CategoryColor}" Margin="1,0,6,0" />
+                            <TextBlock Text="{Binding Category}" Classes="muted" FontSize="12" />
+                        </StackPanel>
+                    </WrapPanel>
                 </StackPanel>
             </Border>
         </DataTemplate>
@@ -180,8 +187,16 @@
                                         </DataGridTemplateColumn>
                                         <DataGridTextColumn Header="Приоритет" Binding="{Binding Priority}" />
                                         <DataGridTextColumn Header="Статус" Binding="{Binding Status}" />
-                                        <DataGridTextColumn Header="Категория" Binding="{Binding Category}" MaxWidth="180" />
-                                        <DataGridTextColumn Header="Займёт, мин" Binding="{Binding EstimatedMinutes}" />
+                                        <DataGridTemplateColumn Header="Категория" MaxWidth="180">
+                                            <DataTemplate x:DataType="vm:TaskCard">
+                                                <Panel IsVisible="{Binding HasCategory}">
+                                                    <Ellipse Width="8" Height="8" Fill="{Binding CategoryColor}"
+                                                             HorizontalAlignment="Left" Margin="12,0,0,0" />
+                                                    <TextBlock Text="{Binding Category}" Margin="28,0,12,0" VerticalAlignment="Center" />
+                                                </Panel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn>
+                                        <DataGridTextColumn Header="Займёт" Binding="{Binding Estimate}" />
                                     </DataGrid.Columns>
                                 </DataGrid>
                             </Border>
