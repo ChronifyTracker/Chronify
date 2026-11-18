@@ -12,6 +12,7 @@ namespace Chronify
         public TaskPriority Priority { get; private set; } = TaskPriority.Medium;
         public TaskStatus Status { get; private set; } = TaskStatus.New;
         public DateTime CreatedAt { get; init; } = DateTime.Now;
+        public DateTime? CompletedAt { get; private set; }
 
         public Guid? CategoryId { get; private set; }
         public Category? Category { get; private set; }
@@ -34,40 +35,58 @@ namespace Chronify
             SetDueDate(dueDate);
             SetEstimatedMinutes(estimatedMinutes);
             SetPriority(priority);
-            SetStatus(status);
             SetCategory(category);
+            SetStatus(status);
         }
 
         private TaskItem() { }
 
         public void StartTask()
         {
+            EnsureNotCompleted();
             SetStatus(TaskStatus.InProgress);
         }
 
         public void CompleteTask()
         {
+            EnsureNotCompleted();
             SetStatus(TaskStatus.Completed);
         }
 
-        public void SetStatus(TaskStatus status)
+        public void ReopenTask()
+        {
+            SetStatus(TaskStatus.InProgress);
+        }
+
+        private void SetStatus(TaskStatus status)
         {
             Status = status;
+
+            if (status == TaskStatus.Completed)
+                CompletedAt = DateTime.Now;
+            else
+                CompletedAt = null;
         }
 
         public void SetPriority(TaskPriority newPriority)
         {
+            EnsureNotCompleted();
+
             Priority = newPriority;
         }
 
         public void SetCategory(Category? category)
         {
+            EnsureNotCompleted();
+
             Category = category;
             CategoryId = category?.Id;
         }
 
         public void SetEstimatedMinutes(int minutes)
         {
+            EnsureNotCompleted();
+
             if (minutes < MinEstimatedMinutes || minutes > MaxEstimatedMinutes)
                 throw new ModelValidationException(ModelError.EstimatedMinutesOutOfRange);
 
@@ -76,6 +95,8 @@ namespace Chronify
 
         public void SetTitle(string title)
         {
+            EnsureNotCompleted();
+
             if (string.IsNullOrWhiteSpace(title))
                 throw new ModelValidationException(ModelError.TaskTitleRequired);
 
@@ -84,6 +105,7 @@ namespace Chronify
 
         public void SetDescription(string description)
         {
+            EnsureNotCompleted();
             ArgumentNullException.ThrowIfNull(description);
 
             Description = description.Trim();
@@ -91,7 +113,15 @@ namespace Chronify
 
         public void SetDueDate(DateTime? dueDate)
         {
+            EnsureNotCompleted();
+
             DueDate = dueDate;
+        }
+
+        private void EnsureNotCompleted()
+        {
+            if (Status == TaskStatus.Completed)
+                throw new ModelValidationException(ModelError.TaskCompleted);
         }
     }
 }

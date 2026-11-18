@@ -20,10 +20,34 @@ public partial class MainWindow : Window
 
     private void EditTask(object? sender, RoutedEventArgs e)
     {
-        var button = (Button)sender!;
-        var card = (TaskCard)button.DataContext!;
+        ShowTaskDialog(ViewModel.CreateEditTask(CardOf(sender).Id));
+    }
 
-        ShowTaskDialog(ViewModel.CreateEditTask(card.Id));
+    private void StartTask(object? sender, RoutedEventArgs e)
+    {
+        ViewModel.StartTask(CardOf(sender).Id);
+    }
+
+    private void CompleteTask(object? sender, RoutedEventArgs e)
+    {
+        ViewModel.CompleteTask(CardOf(sender).Id);
+    }
+
+    private void ReopenTask(object? sender, RoutedEventArgs e)
+    {
+        ViewModel.ReopenTask(CardOf(sender).Id);
+    }
+
+    private void DeleteTask(object? sender, RoutedEventArgs e)
+    {
+        ViewModel.DeleteTask(CardOf(sender).Id);
+    }
+
+    private static TaskCard CardOf(object? sender)
+    {
+        var control = (Control)sender!;
+
+        return (TaskCard)control.DataContext!;
     }
 
     private async void ShowTaskDialog(AddTaskViewModel? dialog)

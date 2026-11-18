@@ -128,6 +128,7 @@ public partial class AddTaskViewModel : ObservableObject
             ErrorMessage = ex.Error switch
             {
                 ModelError.TaskTitleRequired => "Введите название.",
+                ModelError.TaskCompleted => "Завершённую задачу нельзя изменить.",
                 ModelError.EstimatedMinutesOutOfRange =>
                     $"Время на задачу — от {TaskItem.MinEstimatedMinutes} до {TaskItem.MaxEstimatedMinutes} мин.",
                 _ => "Проверьте данные задачи."

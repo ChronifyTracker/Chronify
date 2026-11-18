@@ -20,6 +20,9 @@ public partial class MainWindowViewModel : ObservableObject
     public partial bool LoadFailed { get; set; }
 
     [ObservableProperty]
+    public partial string? ErrorMessage { get; set; }
+
+    [ObservableProperty]
     public partial bool IsHomePage { get; set; } = true;
 
     public ObservableCollection<TaskCard> UrgentTasks { get; } = [];
@@ -76,7 +79,7 @@ public partial class MainWindowViewModel : ObservableObject
         {
             var task = _repository.GetById(taskId);
 
-            if (task is null)
+            if (task is null || task.Status == TaskStatus.Completed)
                 return null;
 
             return new AddTaskViewModel(_repository, _categoryRepository, task);
@@ -88,10 +91,43 @@ public partial class MainWindowViewModel : ObservableObject
         }
     }
 
+    public void StartTask(Guid taskId)
+    {
+        ChangeTask(taskId, task => task.StartTask());
+    }
+
+    public void CompleteTask(Guid taskId)
+    {
+        ChangeTask(taskId, task => task.CompleteTask());
+    }
+
+    public void ReopenTask(Guid taskId)
+    {
+        ChangeTask(taskId, task => task.ReopenTask());
+    }
+
+    public void DeleteTask(Guid taskId)
+    {
+        ErrorMessage = null;
+
+        try
+        {
+            _repository.Delete(taskId);
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine(ex);
+            ErrorMessage = "Не удалось удалить задачу.";
+        }
+
+        Refresh();
+    }
+
     [RelayCommand]
     private void ShowHome()
     {
         IsHomePage = true;
+        ErrorMessage = null;
         Refresh();
     }
 
@@ -99,6 +135,30 @@ public partial class MainWindowViewModel : ObservableObject
     private void ShowAll()
     {
         IsHomePage = false;
+        ErrorMessage = null;
+        Refresh();
+    }
+
+    private void ChangeTask(Guid taskId, Action<TaskItem> change)
+    {
+        ErrorMessage = null;
+
+        try
+        {
+            var task = _repository.GetById(taskId);
+
+            if (task is not null)
+            {
+                change(task);
+                _repository.Update(task);
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine(ex);
+            ErrorMessage = "Не удалось изменить задачу.";
+        }
+
         Refresh();
     }
 
