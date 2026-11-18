@@ -7,6 +7,9 @@ namespace Chronify
         TaskCompleted,
         CategoryNameRequired,
         CategoryNameTaken,
-        CategoryColorRequired
+        CategoryColorRequired,
+        DueDateInPast,
+        TaskPriorityInvalid,
+        TaskStatusInvalid
     }
 }

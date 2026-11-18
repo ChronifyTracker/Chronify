@@ -100,7 +100,9 @@ public partial class MainWindowViewModel : ObservableObject
             var task = _repository.GetById(taskId);
 
             if (task is null || task.Status == TaskStatus.Completed)
+            {
                 return null;
+            }
 
             return new AddTaskViewModel(_repository, _categoryRepository, task);
         }
@@ -174,7 +176,9 @@ public partial class MainWindowViewModel : ObservableObject
 
         if (e.PropertyName is nameof(SearchText) or nameof(SelectedCategory)
             or nameof(StatusIndex) or nameof(DueIndex) or nameof(SortIndex))
+        {
             ApplyFilters();
+        }
     }
 
     private void ApplyFilters()
@@ -203,7 +207,9 @@ public partial class MainWindowViewModel : ObservableObject
                 var category = categories[i];
 
                 if (!Categories.Any(option => option.Category?.Id == category.Id))
+                {
                     Categories.Insert(i + 1, new CategoryOption(category.Name, category));
+                }
             }
         }
         catch (Exception ex)
@@ -240,10 +246,14 @@ public partial class MainWindowViewModel : ObservableObject
     {
         var newCards = tasks.Select(task => new TaskCard(task)).ToList();
         if (newCards.SequenceEqual(cards))
+        {
             return;
+        }
 
         cards.Clear();
         foreach (var card in newCards)
+        {
             cards.Add(card);
+        }
     }
 }

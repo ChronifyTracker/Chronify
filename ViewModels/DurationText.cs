@@ -8,14 +8,20 @@ public static class DurationText
     public static string From(int minutes)
     {
         if (minutes <= 0)
+        {
             return "";
+        }
 
         if (minutes < 10)
+        {
             return $"{minutes} мин";
+        }
 
         var toFiveMinutes = RoundTo(minutes, 5);
         if (toFiveMinutes < MinutesInHour)
+        {
             return $"{toFiveMinutes} мин";
+        }
 
         var toHalfHour = RoundTo(minutes, 30);
         if (toHalfHour < 5 * MinutesInHour)
@@ -28,7 +34,9 @@ public static class DurationText
 
         var toHour = RoundTo(minutes, MinutesInHour);
         if (toHour < 2 * MinutesInDay)
+        {
             return $"{toHour / MinutesInHour} ч";
+        }
 
         var toDay = RoundTo(minutes, MinutesInDay);
         return $"{toDay / MinutesInDay} дн";

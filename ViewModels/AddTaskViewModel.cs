@@ -1,16 +1,13 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace Chronify.ViewModels;
 
 public partial class AddTaskViewModel : ObservableObject
 {
-    private static readonly string[] CategoryColors =
-    [
-        "#F34F78", "#5B9BF3", "#4CC38A", "#F2B45A",
-        "#A78BFA", "#3CC8C8", "#F2854A", "#E06BD6"
-    ];
+    private const string DefaultCategoryColor = "#F34F78";
 
     private static readonly CategoryOption NoCategory = new("Без категории");
     private static readonly CategoryOption NewCategory = new("+ Добавить категорию", isAddNew: true);
@@ -42,6 +39,9 @@ public partial class AddTaskViewModel : ObservableObject
     public partial DateTime? DueDate { get; set; }
 
     [ObservableProperty]
+    public partial string? DateText { get; set; }
+
+    [ObservableProperty]
     public partial TimeSpan? DueTime { get; set; } = TimeSpan.FromHours(18);
 
     [ObservableProperty]
@@ -50,10 +50,16 @@ public partial class AddTaskViewModel : ObservableObject
     public ObservableCollection<CategoryOption> Categories { get; } = [NoCategory];
     public bool CategoriesLoaded { get; }
     public bool IsAddingCategory => SelectedCategory == NewCategory;
+
     public string Heading => _task is null ? "Новая задача" : "Изменить задачу";
+
     public string SaveText => _task is null ? "Добавить" : "Сохранить";
 
-    public AddTaskViewModel(ITaskRepository repository, ICategoryRepository categoryRepository, TaskItem? task = null)
+    public AddTaskViewModel(
+        ITaskRepository repository,
+        ICategoryRepository categoryRepository,
+        TaskItem? task = null
+    )
     {
         _repository = repository;
         _categoryRepository = categoryRepository;
@@ -62,7 +68,9 @@ public partial class AddTaskViewModel : ObservableObject
         try
         {
             foreach (var category in _categoryRepository.GetAll())
+            {
                 Categories.Add(new CategoryOption(category.Name, category));
+            }
 
             Categories.Add(NewCategory);
             CategoriesLoaded = true;
@@ -73,7 +81,9 @@ public partial class AddTaskViewModel : ObservableObject
         }
 
         if (task is null)
+        {
             return;
+        }
 
         Title = task.Title;
         Description = task.Description;
@@ -98,27 +108,54 @@ public partial class AddTaskViewModel : ObservableObject
             return false;
         }
 
-        if (IsAddingCategory && !AddCategory())
+        if (Minutes < TaskItem.MinEstimatedMinutes || Minutes > TaskItem.MaxEstimatedMinutes)
+        {
+            ErrorMessage = $"Время на задачу — от {TaskItem.MinEstimatedMinutes} до {TaskItem.MaxEstimatedMinutes} мин.";
             return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(DateText) &&
+            (!DateTime.TryParse(
+            DateText,
+            CultureInfo.CurrentCulture,
+            DateTimeStyles.None,
+            out var parsed
+        )
+                || DueDate is null || parsed.Date != DueDate.Value.Date))
+        {
+            ErrorMessage = "Проверьте дату.";
+            return false;
+        }
 
         DateTime? dueDate = null;
         if (DueDate is DateTime date)
+        {
             dueDate = date.Date + (DueTime ?? TimeSpan.FromHours(18));
+        }
 
         try
         {
-            var task = _task ?? new TaskItem(Title);
+            var task = _task?.Copy() ?? new TaskItem(Title);
 
             task.SetTitle(Title);
             task.SetDescription(Description ?? "");
             task.SetDueDate(dueDate);
             task.SetEstimatedMinutes((int)Minutes.Value);
             task.SetPriority((TaskPriority)PriorityIndex);
+            if (IsAddingCategory && !AddCategory())
+            {
+                return false;
+            }
+
             if (CategoriesLoaded)
+            {
                 task.SetCategory(SelectedCategory?.Category);
+            }
 
             if (_task is null)
+            {
                 _repository.Add(task);
+            }
             else if (!_repository.Update(task))
             {
                 ErrorMessage = "Задача уже удалена.";
@@ -133,6 +170,8 @@ public partial class AddTaskViewModel : ObservableObject
             {
                 ModelError.TaskTitleRequired => "Введите название.",
                 ModelError.TaskCompleted => "Завершённую задачу нельзя изменить.",
+                ModelError.DueDateInPast => "Дедлайн не может быть в прошлом.",
+                ModelError.TaskPriorityInvalid => "Выберите приоритет задачи.",
                 ModelError.EstimatedMinutesOutOfRange =>
                     $"Время на задачу — от {TaskItem.MinEstimatedMinutes} до {TaskItem.MaxEstimatedMinutes} мин.",
                 _ => "Проверьте данные задачи."
@@ -151,16 +190,16 @@ public partial class AddTaskViewModel : ObservableObject
         base.OnPropertyChanged(e);
 
         if (e.PropertyName != nameof(ErrorMessage))
+        {
             ErrorMessage = null;
+        }
     }
 
     private bool AddCategory()
     {
         try
         {
-            var savedCategories = Categories.Count(option => option.Category is not null);
-            var color = CategoryColors[savedCategories % CategoryColors.Length];
-            var category = new Category(NewCategoryName ?? "", color);
+            var category = new Category(NewCategoryName ?? "", DefaultCategoryColor);
             var option = new CategoryOption(category.Name, category);
 
             _categoryRepository.Add(category);

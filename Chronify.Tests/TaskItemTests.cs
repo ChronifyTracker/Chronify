@@ -102,7 +102,7 @@ public class TaskItemTests
     [Fact]
     public void OverdueTaskIsUrgent()
     {
-        var task = new TaskItem("task", dueDate: DateTime.Now.AddDays(-1), priority: TaskPriority.Low);
+        var task = TaskItem.FromImport("task", dueDate: DateTime.Now.AddDays(-1), priority: TaskPriority.Low);
 
         Assert.True(task.IsUrgent);
     }
@@ -110,8 +110,16 @@ public class TaskItemTests
     [Fact]
     public void TaskDueWithinDayIsUrgent()
     {
-        var dueSoon = new TaskItem("due soon", dueDate: DateTime.Now.AddHours(12), priority: TaskPriority.Low);
-        var dueLater = new TaskItem("due later", dueDate: DateTime.Now.AddDays(3), priority: TaskPriority.Low);
+        var dueSoon = TaskItem.FromImport(
+            "due soon",
+            dueDate: DateTime.Now.AddHours(12),
+            priority: TaskPriority.Low
+        );
+        var dueLater = TaskItem.FromImport(
+            "due later",
+            dueDate: DateTime.Now.AddDays(3),
+            priority: TaskPriority.Low
+        );
 
         Assert.True(dueSoon.IsUrgent);
         Assert.False(dueLater.IsUrgent);
@@ -120,7 +128,7 @@ public class TaskItemTests
     [Fact]
     public void CompletedTaskIsNeverUrgent()
     {
-        var task = new TaskItem("task", dueDate: DateTime.Now.AddDays(-1), priority: TaskPriority.Critical);
+        var task = TaskItem.FromImport("task", dueDate: DateTime.Now.AddDays(-1), priority: TaskPriority.Critical);
 
         task.CompleteTask();
 
@@ -130,7 +138,7 @@ public class TaskItemTests
     [Fact]
     public void TaskPastDeadlineIsOverdueUntilCompleted()
     {
-        var task = new TaskItem("task", dueDate: DateTime.Now.AddDays(-1));
+        var task = TaskItem.FromImport("task", dueDate: DateTime.Now.AddDays(-1));
 
         Assert.True(task.IsOverdue);
 

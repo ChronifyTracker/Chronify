@@ -19,7 +19,9 @@ namespace Chronify
         public void SetName(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
+            {
                 throw new ModelValidationException(ModelError.CategoryNameRequired);
+            }
 
             Name = name.Trim();
         }
@@ -27,7 +29,14 @@ namespace Chronify
         public void SetColor(string color)
         {
             if (string.IsNullOrWhiteSpace(color))
+            {
                 throw new ModelValidationException(ModelError.CategoryColorRequired);
+            }
+
+            if (!System.Text.RegularExpressions.Regex.IsMatch(color.Trim(), "^#[0-9a-fA-F]{6}$"))
+            {
+                throw new ArgumentException("Колір потрібно записати у форматі #RRGGBB.");
+            }
 
             Color = color.Trim();
         }

@@ -18,8 +18,24 @@ namespace Chronify
         public Category? Category { get; private set; }
 
         public bool IsOverdue => Status != TaskStatus.Completed && DueDate is DateTime dueDate && DateTime.Now > dueDate;
-        public bool IsDueSoon => Status != TaskStatus.Completed && TimeRemaining is TimeSpan left && left >= TimeSpan.Zero && left <= TimeSpan.FromDays(1);
-        public bool IsUrgent => Status != TaskStatus.Completed && (Priority >= TaskPriority.High || IsOverdue || IsDueSoon);
+
+        public bool IsDueSoon
+        {
+            get
+            {
+                return Status != TaskStatus.Completed && TimeRemaining is TimeSpan left && left >= TimeSpan.Zero
+                    && left <= TimeSpan.FromDays(1);
+            }
+        }
+
+        public bool IsUrgent
+        {
+            get
+            {
+                return Status != TaskStatus.Completed && (Priority >= TaskPriority.High || IsOverdue || IsDueSoon);
+            }
+        }
+
         public TimeSpan? TimeRemaining => DueDate is DateTime dueDate ? dueDate - DateTime.Now : null;
 
         public TaskItem(
@@ -29,7 +45,8 @@ namespace Chronify
             int estimatedMinutes = 0,
             TaskPriority priority = TaskPriority.Medium,
             TaskStatus status = TaskStatus.New,
-            Category? category = null)
+            Category? category = null
+        )
         {
             SetTitle(title);
             SetDescription(description);
@@ -40,7 +57,40 @@ namespace Chronify
             SetStatus(status);
         }
 
-        private TaskItem() { }
+        private TaskItem()
+        {
+        }
+
+        // Зовнішнє завдання може вже мати прострочений дедлайн. Ручне введення й далі перевіряється.
+        public static TaskItem FromImport(
+            string title,
+            string description = "",
+            DateTime? dueDate = null,
+            int estimatedMinutes = 0,
+            TaskPriority priority = TaskPriority.Medium,
+            TaskStatus status = TaskStatus.New,
+            Category? category = null,
+            DateTime? completedAt = null,
+            DateTime? createdAt = null
+        )
+        {
+            var task = new TaskItem(
+                title,
+                description,
+                estimatedMinutes: estimatedMinutes,
+                priority: priority,
+                category: category
+            )
+            { CreatedAt = createdAt ?? DateTime.Now };
+            task.DueDate = dueDate;
+            task.SetStatus(status);
+            if (status == TaskStatus.Completed && completedAt is not null)
+            {
+                task.CompletedAt = completedAt;
+            }
+
+            return task;
+        }
 
         public void StartTask()
         {
@@ -61,17 +111,31 @@ namespace Chronify
 
         private void SetStatus(TaskStatus status)
         {
+            if (!Enum.IsDefined(status))
+            {
+                throw new ModelValidationException(ModelError.TaskStatusInvalid);
+            }
+
             Status = status;
 
             if (status == TaskStatus.Completed)
+            {
                 CompletedAt = DateTime.Now;
+            }
             else
+            {
                 CompletedAt = null;
+            }
         }
 
         public void SetPriority(TaskPriority newPriority)
         {
             EnsureNotCompleted();
+
+            if (!Enum.IsDefined(newPriority))
+            {
+                throw new ModelValidationException(ModelError.TaskPriorityInvalid);
+            }
 
             Priority = newPriority;
         }
@@ -89,7 +153,9 @@ namespace Chronify
             EnsureNotCompleted();
 
             if (minutes < MinEstimatedMinutes || minutes > MaxEstimatedMinutes)
+            {
                 throw new ModelValidationException(ModelError.EstimatedMinutesOutOfRange);
+            }
 
             EstimatedMinutes = minutes;
         }
@@ -99,7 +165,9 @@ namespace Chronify
             EnsureNotCompleted();
 
             if (string.IsNullOrWhiteSpace(title))
+            {
                 throw new ModelValidationException(ModelError.TaskTitleRequired);
+            }
 
             Title = title.Trim();
         }
@@ -116,13 +184,40 @@ namespace Chronify
         {
             EnsureNotCompleted();
 
+            // Прострочений дедлайн можна залишити під час редагування інших полів.
+            if (dueDate < DateTime.Now && dueDate != DueDate)
+            {
+                throw new ModelValidationException(ModelError.DueDateInPast);
+            }
+
             DueDate = dueDate;
         }
 
         private void EnsureNotCompleted()
         {
             if (Status == TaskStatus.Completed)
+            {
                 throw new ModelValidationException(ModelError.TaskCompleted);
+            }
+        }
+
+        // Редагуємо копію: помилка форми не повинна змінювати початковий об'єкт.
+        public TaskItem Copy()
+        {
+            return new()
+            {
+                Id = Id,
+                Title = Title,
+                Description = Description,
+                DueDate = DueDate,
+                EstimatedMinutes = EstimatedMinutes,
+                Priority = Priority,
+                Status = Status,
+                CreatedAt = CreatedAt,
+                CompletedAt = CompletedAt,
+                CategoryId = CategoryId,
+                Category = Category
+            };
         }
     }
 }

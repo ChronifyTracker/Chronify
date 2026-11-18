@@ -39,7 +39,9 @@ public static class TaskSorter
     private static long StartByTicks(TaskItem task)
     {
         if (task.DueDate is not DateTime dueDate)
+        {
             return long.MaxValue;
+        }
 
         var workTime = TimeSpan.FromMinutes(task.EstimatedMinutes);
         var headStart = PriorityHeadStart * (int)task.Priority;
