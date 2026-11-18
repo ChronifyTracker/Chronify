@@ -3,12 +3,12 @@
         xmlns:vm="using:Chronify.ViewModels"
         x:Class="Chronify.Views.AddTaskWindow"
         x:DataType="vm:AddTaskViewModel"
-        Title="Новая задача" Width="560" Height="600"
+        Title="{Binding Heading}" Width="560" Height="680"
         CanResize="False" WindowStartupLocation="CenterOwner">
     <Grid RowDefinitions="*,Auto" Margin="28">
         <ScrollViewer HorizontalScrollBarVisibility="Disabled">
             <StackPanel Spacing="18">
-                <TextBlock Text="Новая задача" FontSize="26" FontWeight="SemiBold" Margin="0,0,0,6" />
+                <TextBlock Text="{Binding Heading}" FontSize="26" FontWeight="SemiBold" Margin="0,0,0,6" />
                 <StackPanel Spacing="7">
                     <TextBlock Text="Название" Classes="muted" />
                     <TextBox x:Name="TitleInput" Text="{Binding Title}" Watermark="Что нужно сделать?" MaxLength="200" />
@@ -17,6 +17,22 @@
                     <TextBlock Text="Описание" Classes="muted" />
                     <TextBox Text="{Binding Description}" Watermark="Необязательно" AcceptsReturn="True"
                              TextWrapping="Wrap" Height="90" />
+                </StackPanel>
+                <StackPanel Spacing="7">
+                    <TextBlock Text="Категория" Classes="muted" />
+                    <ComboBox ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}"
+                              HorizontalAlignment="Stretch" IsEnabled="{Binding CategoriesLoaded}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:CategoryOption">
+                                <TextBlock Text="{Binding Name}" Classes.accent="{Binding IsAddNew}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <TextBlock Text="Не удалось загрузить категории." Foreground="#FF8DA9"
+                               IsVisible="{Binding !CategoriesLoaded}" />
+                    <TextBox x:Name="NewCategoryInput" Text="{Binding NewCategoryName}"
+                             Watermark="Название новой категории" MaxLength="50"
+                             IsVisible="{Binding IsAddingCategory}" />
                 </StackPanel>
                 <Grid ColumnDefinitions="*,16,*">
                     <StackPanel Spacing="7">
@@ -38,7 +54,7 @@
                 <Grid ColumnDefinitions="*,16,*">
                     <StackPanel Spacing="7">
                         <TextBlock Text="Дата" Classes="muted" />
-                        <CalendarDatePicker SelectedDate="{Binding DueDate}" Text="{Binding DueDateText, Mode=TwoWay}"
+                        <CalendarDatePicker SelectedDate="{Binding DueDate}"
                                             Watermark="Без срока" SelectedDateFormat="Short"
                                             HorizontalAlignment="Stretch" />
                     </StackPanel>
@@ -48,13 +64,15 @@
                                     HorizontalAlignment="Stretch" ToolTip.Tip="Учитывается, если выбрана дата" />
                     </StackPanel>
                 </Grid>
-                <TextBlock Text="{Binding ErrorMessage}" Foreground="#FF8DA9" TextWrapping="Wrap"
-                           IsVisible="{Binding ErrorMessage, Converter={x:Static ObjectConverters.IsNotNull}}" />
             </StackPanel>
         </ScrollViewer>
-        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12" Margin="0,20,0,0">
-            <Button Content="Отмена" Click="Cancel" />
-            <Button Content="Добавить" Classes="primary" Click="Save" />
-        </StackPanel>
+        <Grid Grid.Row="1" ColumnDefinitions="*,Auto" Margin="0,20,0,0">
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="#FF8DA9" TextWrapping="Wrap"
+                       VerticalAlignment="Center" Margin="0,0,16,0" />
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12">
+                <Button Content="Отмена" Click="Cancel" />
+                <Button Content="{Binding SaveText}" Classes="primary" Click="Save" />
+            </StackPanel>
+        </Grid>
     </Grid>
 </Window>

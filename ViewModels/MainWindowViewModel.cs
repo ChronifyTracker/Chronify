@@ -10,6 +10,7 @@ namespace Chronify.ViewModels;
 public partial class MainWindowViewModel : ObservableObject
 {
     private readonly ITaskRepository _repository;
+    private readonly ICategoryRepository _categoryRepository;
     private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromMinutes(1) };
 
     [ObservableProperty]
@@ -25,9 +26,10 @@ public partial class MainWindowViewModel : ObservableObject
     public ObservableCollection<TaskCard> NewTasks { get; } = [];
     public ObservableCollection<TaskCard> AllTasks { get; } = [];
 
-    public MainWindowViewModel(ITaskRepository repository)
+    public MainWindowViewModel(ITaskRepository repository, ICategoryRepository categoryRepository)
     {
         _repository = repository;
+        _categoryRepository = categoryRepository;
         Refresh();
 
         _timer.Tick += (_, _) => Refresh();
@@ -65,7 +67,25 @@ public partial class MainWindowViewModel : ObservableObject
 
     public AddTaskViewModel CreateAddTask()
     {
-        return new AddTaskViewModel(_repository);
+        return new AddTaskViewModel(_repository, _categoryRepository);
+    }
+
+    public AddTaskViewModel? CreateEditTask(Guid taskId)
+    {
+        try
+        {
+            var task = _repository.GetById(taskId);
+
+            if (task is null)
+                return null;
+
+            return new AddTaskViewModel(_repository, _categoryRepository, task);
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine(ex);
+            return null;
+        }
     }
 
     [RelayCommand]

@@ -94,28 +94,38 @@
                 </ScrollViewer>
                 <Grid IsVisible="{Binding !IsHomePage}">
                     <TextBlock Text="Задач пока нет" Classes="muted" IsVisible="{Binding !AllTasks.Count}" />
-                    <Border Classes="panel" ClipToBounds="True" VerticalAlignment="Top"
-                            IsVisible="{Binding !!AllTasks.Count}">
-                        <DataGrid ItemsSource="{Binding AllTasks}" IsReadOnly="True" CanUserSortColumns="False">
-                            <DataGrid.Styles>
-                                <Style Selector="DataGridRow" x:DataType="vm:TaskCard">
-                                    <Setter Property="ToolTip.Tip" Value="{Binding Tooltip}" />
-                                </Style>
-                            </DataGrid.Styles>
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Название" Binding="{Binding Title}" Width="*" MinWidth="160" />
-                                <DataGridTemplateColumn Header="Срок">
-                                    <DataTemplate x:DataType="vm:TaskCard">
-                                        <TextBlock Text="{Binding DueDate}" Margin="12,0" VerticalAlignment="Center"
-                                                   Classes.overdue="{Binding IsOverdue}" Classes.soon="{Binding IsDueSoon}" />
-                                    </DataTemplate>
-                                </DataGridTemplateColumn>
-                                <DataGridTextColumn Header="Приоритет" Binding="{Binding Priority}" />
-                                <DataGridTextColumn Header="Статус" Binding="{Binding Status}" />
-                                <DataGridTextColumn Header="Категория" Binding="{Binding Category}" MaxWidth="180" />
-                                <DataGridTextColumn Header="Займёт, мин" Binding="{Binding EstimatedMinutes}" />
-                            </DataGrid.Columns>
-                        </DataGrid>
+                    <Border Classes="panel" VerticalAlignment="Top" IsVisible="{Binding !!AllTasks.Count}">
+                        <Border CornerRadius="11" ClipToBounds="True">
+                            <DataGrid ItemsSource="{Binding AllTasks}" IsReadOnly="True" CanUserSortColumns="False">
+                                <DataGrid.Styles>
+                                    <Style Selector="DataGridRow" x:DataType="vm:TaskCard">
+                                        <Setter Property="ToolTip.Tip" Value="{Binding Tooltip}" />
+                                    </Style>
+                                </DataGrid.Styles>
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Название" Binding="{Binding Title}" Width="*" MinWidth="160" />
+                                    <DataGridTemplateColumn Header="Срок">
+                                        <DataTemplate x:DataType="vm:TaskCard">
+                                            <TextBlock Text="{Binding DueDate}" Margin="12,0" VerticalAlignment="Center"
+                                                       Classes.overdue="{Binding IsOverdue}" Classes.soon="{Binding IsDueSoon}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTextColumn Header="Приоритет" Binding="{Binding Priority}" />
+                                    <DataGridTextColumn Header="Статус" Binding="{Binding Status}" />
+                                    <DataGridTextColumn Header="Категория" Binding="{Binding Category}" MaxWidth="180" />
+                                    <DataGridTextColumn Header="Займёт, мин" Binding="{Binding EstimatedMinutes}" />
+                                    <DataGridTemplateColumn CanUserResize="False">
+                                        <DataTemplate x:DataType="vm:TaskCard">
+                                            <Button Classes="icon" Margin="4,0" VerticalAlignment="Center" Click="EditTask"
+                                                    ToolTip.Tip="Изменить" AutomationProperties.Name="Изменить">
+                                                <PathIcon Data="{StaticResource EditIcon}" Width="14" Height="14"
+                                                          Foreground="{StaticResource MutedBrush}" />
+                                            </Button>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Border>
                     </Border>
                 </Grid>
             </Grid>
