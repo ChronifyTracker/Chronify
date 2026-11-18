@@ -12,7 +12,9 @@ public record TaskCard
     public string Status { get; }
     public string DueDate { get; }
     public string Category { get; }
-    public string EstimatedMinutes { get; }
+    public string? CategoryColor { get; }
+    public bool HasCategory => Category.Length > 0;
+    public string Estimate { get; }
     public bool IsOverdue { get; }
     public bool IsDueSoon { get; }
     public bool CanStart { get; }
@@ -39,7 +41,8 @@ public record TaskCard
         };
         DueDate = task.DueDate?.ToString("dd.MM.yyyy · HH:mm") ?? "Без срока";
         Category = task.Category?.Name ?? "";
-        EstimatedMinutes = task.EstimatedMinutes > 0 ? task.EstimatedMinutes.ToString() : "";
+        CategoryColor = task.Category?.Color;
+        Estimate = DurationText.From(task.EstimatedMinutes);
         IsOverdue = task.IsOverdue;
         IsDueSoon = task.IsDueSoon;
         CanStart = task.Status == TaskStatus.New;
@@ -49,9 +52,9 @@ public record TaskCard
             Status = "Просрочена";
 
         Details = DueDate;
-        if (EstimatedMinutes.Length > 0)
-            Details += $" · {EstimatedMinutes} мин";
-        if (Category.Length > 0)
+        if (Estimate.Length > 0)
+            Details += $" · {Estimate}";
+        if (HasCategory)
             Details += $" · {Category}";
     }
 }

@@ -6,7 +6,11 @@ namespace Chronify.ViewModels;
 
 public partial class AddTaskViewModel : ObservableObject
 {
-    private const string DefaultCategoryColor = "#F34F78";
+    private static readonly string[] CategoryColors =
+    [
+        "#F34F78", "#5B9BF3", "#4CC38A", "#F2B45A",
+        "#A78BFA", "#3CC8C8", "#F2854A", "#E06BD6"
+    ];
 
     private static readonly CategoryOption NoCategory = new("Без категории");
     private static readonly CategoryOption NewCategory = new("+ Добавить категорию", isAddNew: true);
@@ -154,7 +158,9 @@ public partial class AddTaskViewModel : ObservableObject
     {
         try
         {
-            var category = new Category(NewCategoryName ?? "", DefaultCategoryColor);
+            var savedCategories = Categories.Count(option => option.Category is not null);
+            var color = CategoryColors[savedCategories % CategoryColors.Length];
+            var category = new Category(NewCategoryName ?? "", color);
             var option = new CategoryOption(category.Name, category);
 
             _categoryRepository.Add(category);

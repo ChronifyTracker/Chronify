@@ -180,8 +180,16 @@
                                         </DataGridTemplateColumn>
                                         <DataGridTextColumn Header="Приоритет" Binding="{Binding Priority}" />
                                         <DataGridTextColumn Header="Статус" Binding="{Binding Status}" />
-                                        <DataGridTextColumn Header="Категория" Binding="{Binding Category}" MaxWidth="180" />
-                                        <DataGridTextColumn Header="Займёт, мин" Binding="{Binding EstimatedMinutes}" />
+                                        <DataGridTemplateColumn Header="Категория" MaxWidth="180">
+                                            <DataTemplate x:DataType="vm:TaskCard">
+                                                <Panel IsVisible="{Binding HasCategory}">
+                                                    <Ellipse Width="8" Height="8" Fill="{Binding CategoryColor}"
+                                                             HorizontalAlignment="Left" Margin="12,0,0,0" />
+                                                    <TextBlock Text="{Binding Category}" Margin="28,0,12,0" VerticalAlignment="Center" />
+                                                </Panel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn>
+                                        <DataGridTextColumn Header="Займёт" Binding="{Binding Estimate}" />
                                     </DataGrid.Columns>
                                 </DataGrid>
                             </Border>
