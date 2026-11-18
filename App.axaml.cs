@@ -21,7 +21,7 @@ public partial class App : Application
             CreateDatabase();
             desktop.MainWindow = new MainWindow
             {
-                DataContext = new MainWindowViewModel(new SqliteTaskRepository())
+                DataContext = new MainWindowViewModel(new SqliteTaskRepository(), new SqliteCategoryRepository())
             };
         }
 

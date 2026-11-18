@@ -11,12 +11,33 @@ public partial class MainWindow : Window
         InitializeComponent();
     }
 
-    private async void AddTask(object? sender, RoutedEventArgs e)
-    {
-        var viewModel = (MainWindowViewModel)DataContext!;
-        var window = new AddTaskWindow { DataContext = viewModel.CreateAddTask() };
+    private MainWindowViewModel ViewModel => (MainWindowViewModel)DataContext!;
 
-        if (await window.ShowDialog<bool>(this))
-            viewModel.Refresh();
+    private void AddTask(object? sender, RoutedEventArgs e)
+    {
+        ShowTaskDialog(ViewModel.CreateAddTask());
+    }
+
+    private void EditTask(object? sender, RoutedEventArgs e)
+    {
+        var button = (Button)sender!;
+        var card = (TaskCard)button.DataContext!;
+
+        ShowTaskDialog(ViewModel.CreateEditTask(card.Id));
+    }
+
+    private async void ShowTaskDialog(AddTaskViewModel? dialog)
+    {
+        if (dialog is null)
+        {
+            ViewModel.Refresh();
+            return;
+        }
+
+        var window = new AddTaskWindow { DataContext = dialog };
+        var saved = await window.ShowDialog<bool>(this);
+
+        if (saved)
+            ViewModel.Refresh();
     }
 }

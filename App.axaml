@@ -11,6 +11,7 @@
         <SolidColorBrush x:Key="DataGridRowSelectedHoveredUnfocusedBackgroundBrush">#5A3A4A</SolidColorBrush>
         <SolidColorBrush x:Key="DataGridCellFocusVisualPrimaryBrush">Transparent</SolidColorBrush>
         <SolidColorBrush x:Key="DataGridCellFocusVisualSecondaryBrush">Transparent</SolidColorBrush>
+        <StreamGeometry x:Key="EditIcon">M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z</StreamGeometry>
     </Application.Resources>
     <Application.Styles>
         <FluentTheme>
@@ -39,6 +40,11 @@
             <Setter Property="Background" Value="#FF7797" />
             <Setter Property="Foreground" Value="#16090E" />
         </Style>
+        <Style Selector="Button.icon">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{StaticResource MutedBrush}" />
+            <Setter Property="Padding" Value="8" />
+        </Style>
         <Style Selector="Button.nav">
             <Setter Property="HorizontalAlignment" Value="Stretch" />
             <Setter Property="HorizontalContentAlignment" Value="Left" />
@@ -48,6 +54,9 @@
         </Style>
         <Style Selector="Button.nav.selected">
             <Setter Property="Background" Value="#301B26" />
+            <Setter Property="Foreground" Value="#FF7899" />
+        </Style>
+        <Style Selector="TextBlock.accent">
             <Setter Property="Foreground" Value="#FF7899" />
         </Style>
         <Style Selector="TextBlock.muted">
@@ -85,9 +94,27 @@
             <Setter Property="Foreground" Value="#F2B45A" />
         </Style>
         <Style Selector="TextBox">
-            <Setter Property="CornerRadius" Value="7" />
             <Setter Property="Background" Value="#1C191F" />
-            <Setter Property="Padding" Value="12,10" />
+            <Setter Property="Padding" Value="12,8" />
+            <Setter Property="MinHeight" Value="38" />
+        </Style>
+        <Style Selector="ComboBox, NumericUpDown, CalendarDatePicker, TimePicker">
+            <Setter Property="Background" Value="#1C191F" />
+            <Setter Property="Height" Value="38" />
+        </Style>
+        <Style Selector="NumericUpDown">
+            <Setter Property="Padding" Value="12,0" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="CalendarDatePicker">
+            <Setter Property="Padding" Value="12,0" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="NumericUpDown TextBox, CalendarDatePicker TextBox">
+            <Setter Property="MinHeight" Value="0" />
+        </Style>
+        <Style Selector="TimePicker /template/ TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
     </Application.Styles>
 </Application>

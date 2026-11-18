@@ -35,9 +35,7 @@ namespace Chronify
             SetEstimatedMinutes(estimatedMinutes);
             SetPriority(priority);
             SetStatus(status);
-
-            if (category is not null)
-                SetCategory(category);
+            SetCategory(category);
         }
 
         private TaskItem() { }
@@ -62,12 +60,10 @@ namespace Chronify
             Priority = newPriority;
         }
 
-        public void SetCategory(Category category)
+        public void SetCategory(Category? category)
         {
-            ArgumentNullException.ThrowIfNull(category);
-
             Category = category;
-            CategoryId = category.Id;
+            CategoryId = category?.Id;
         }
 
         public void SetEstimatedMinutes(int minutes)
