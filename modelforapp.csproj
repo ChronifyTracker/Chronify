@@ -13,6 +13,7 @@
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
     <Compile Remove="Chronify.Tests\**" />
+    <Compile Remove="Tools/**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,6 +21,8 @@
     <PackageReference Include="Avalonia.Desktop" Version="11.3.21" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.21" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="Npgsql" Version="10.0.0" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.0" />
     <PackageReference Include="Material.Icons.Avalonia" Version="3.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.14" />
   </ItemGroup>
