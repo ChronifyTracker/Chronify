@@ -3,6 +3,7 @@
         <StackPanel Spacing="16" Margin="0,0,12,20">
             <TextBlock Text="{Binding ErrorMessage}" Foreground="#FF8DA9" TextWrapping="Wrap" />
             <TextBlock Text="{Binding Message}" Foreground="#81C784" TextWrapping="Wrap" />
+            <TextBlock Text="{Binding RefreshNotice}" IsVisible="{Binding HasRefreshNotice}" Classes="muted" TextWrapping="Wrap" />
             <TextBlock Text="{loc:Translate Common.Working}" IsVisible="{Binding IsBusy}" Classes="muted" />
             <StackPanel Spacing="16" IsEnabled="{Binding !IsBusy}">
                 <TextBlock Text="{loc:Translate Groups.OfflineHint}" TextWrapping="Wrap" Classes="muted" />

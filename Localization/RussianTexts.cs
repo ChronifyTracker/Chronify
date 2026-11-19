@@ -175,6 +175,7 @@ public static class RussianTexts
         ["Groups.NewName"] = "Название новой группы",
         ["Groups.OfflineHint"] = "Группы работают онлайн. Полученные задачи сохраняются на компьютере.",
         ["Groups.Refresh"] = "Обновить группы",
+        ["Groups.RefreshFailed"] = "Не удалось обновить группы. Показана сохранённая копия; обновление повторится автоматически.",
         ["Groups.SelectGroup"] = "Выберите группу.",
         ["Groups.SelectTaskDetails"] = "Выберите задачу, чтобы прочитать условия.",
         ["Groups.Snapshot"] = "{0} · {1}\nКопия от {2:g}",

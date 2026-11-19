@@ -152,6 +152,8 @@ public static class NeonChecks
             await admin.Synchronize();
             var group = admin.Groups().Single();
             Check(group.Role == TeamRole.Administrator, "Creator must be administrator");
+            var ownerView = new Chronify.ViewModels.GroupsViewModel(ownerIdentity, factory);
+            Check(ownerView.Members.Count == 1, "Owner initially sees only the group creator");
             await worker.Join(group.InviteCode);
             await worker.Join(group.InviteCode);
             await worker.Synchronize();
@@ -160,6 +162,14 @@ public static class NeonChecks
                 .Count == 0,
                 "New member must have no role, no member list and no tasks");
             var pending = new Chronify.ViewModels.GroupsViewModel(workerIdentity, factory);
+            await ownerView.RefreshAutomatically();
+            Check(ownerView.Members.Any(member => member.Id == workerIdentity.Id && member.Role == TeamRole.NoRole),
+                "Automatic refresh must reveal a newly joined member to the owner without a manual refresh");
+            ownerView.SelectedMember = ownerView.Members.Single(member => member.Id == workerIdentity.Id);
+            ownerView.TaskTitle = "Draft during refresh";
+            await ownerView.RefreshAutomatically();
+            Check(ownerView.SelectedMember?.Id == workerIdentity.Id && ownerView.TaskTitle == "Draft during refresh",
+                "Automatic refresh must preserve the selected group member and assignment draft");
             Check(
                 !pending.CanViewGroup && !pending.CanAssign && pending.GroupDetails.Contains("Ожидает"),
                 "UI must show only pending approval for NoRole"
@@ -183,6 +193,9 @@ public static class NeonChecks
             );
             await Denied(() => admin.Assign(group.Id, assignment), "Task must not be assigned to a NoRole member");
             await admin.ChangeRole(group.Id, worker.Connection.RemoteUserId.Value, TeamRole.Executor);
+            await pending.RefreshAutomatically();
+            Check(pending.CanViewGroup && pending.SelectedGroup?.Role == TeamRole.Executor && pending.Members.Count == 2,
+                "The joining user's role and member list must update automatically after administrator approval");
             await NeonGateway.Request<object>("groups/join", new JoinGroupRequest(group.InviteCode), lead.Token);
             await admin.ChangeRole(group.Id, lead.UserId, TeamRole.TeamLead);
             await admin.Assign(group.Id, assignment);
@@ -232,6 +245,9 @@ public static class NeonChecks
                 lead.Token
             );
             Check(leadView.Tasks.Count == 3, "Lead must see all assignments");
+            await pending.RefreshAutomatically();
+            Check(pending.Members.Any(member => member.Id == lead.UserId) && pending.Tasks.Count == 2,
+                "Existing participants must receive new members and assigned tasks through automatic refresh");
             await admin.Synchronize();
             Check(admin.Members(group.Id).Count == 3, "Repeated joins must not duplicate members");
             var repository = new SqliteTaskRepository(workerIdentity.Id, factory);

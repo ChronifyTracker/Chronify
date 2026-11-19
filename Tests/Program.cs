@@ -63,6 +63,16 @@ try
 {
     CheckMigration();
     CheckAuthentication();
+    if (args.Contains("--group-refresh-only"))
+    {
+        CheckOwnershipAndCrud();
+        auth.Login(first.Email, "Password-For-Checks!", false);
+        AppBuilder.Configure<App>().UseSkia().UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false })
+            .SetupWithoutStarting();
+        checks += GroupRefreshUiChecks.Run(CreateMain, first.Id, contextFactory);
+        Console.WriteLine($"PASS: {checks} checks. Fixtures: {directory}");
+        return;
+    }
     if (args.Contains("--localization-only"))
     {
         CheckOwnershipAndCrud();
@@ -851,6 +861,7 @@ void CheckAvalonia()
         "Task edit dialog must persist the copied entity"
     );
     CheckLocalization(main, mainModel);
+    checks += GroupRefreshUiChecks.Run(CreateMain, first.Id, contextFactory);
     bool logoutRequested = false;
     mainModel.LogoutRequested += () => logoutRequested = true;
     Pump(mainModel.AccountPage.LogoutCommand.ExecuteAsync(null));

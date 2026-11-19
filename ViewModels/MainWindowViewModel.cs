@@ -448,10 +448,11 @@ public partial class MainWindowViewModel : PageViewModel
     }
 
     [RelayCommand]
-    private void ShowGroups()
+    private async Task ShowGroups()
     {
         SelectedPage = 7;
         GroupsPage.RefreshCache();
+        await GroupsPage.RefreshAutomatically();
     }
     [RelayCommand]
     private Task ImportClassroom()

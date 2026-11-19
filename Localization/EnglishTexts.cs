@@ -175,6 +175,7 @@ public static class EnglishTexts
         ["Groups.NewName"] = "New group name",
         ["Groups.OfflineHint"] = "Groups work online. Received tasks are saved on this computer.",
         ["Groups.Refresh"] = "Refresh groups",
+        ["Groups.RefreshFailed"] = "Could not refresh groups. Showing the saved copy; updates will retry automatically.",
         ["Groups.SelectGroup"] = "Select a group.",
         ["Groups.SelectTaskDetails"] = "Select a task to read its details.",
         ["Groups.Snapshot"] = "{0} · {1}\nCopy from {2:g}",

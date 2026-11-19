@@ -175,6 +175,7 @@ public static class UkrainianTexts
         ["Groups.NewName"] = "Назва нової групи",
         ["Groups.OfflineHint"] = "Групи працюють онлайн. Отримані задачі зберігаються на комп'ютері.",
         ["Groups.Refresh"] = "Оновити групи",
+        ["Groups.RefreshFailed"] = "Не вдалося оновити групи. Показано збережену копію; оновлення повториться автоматично.",
         ["Groups.SelectGroup"] = "Виберіть групу.",
         ["Groups.SelectTaskDetails"] = "Виберіть задачу, щоб прочитати умови.",
         ["Groups.Snapshot"] = "{0} · {1}\nКопія від {2:g}",

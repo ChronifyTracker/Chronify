@@ -64,7 +64,7 @@ public class TeamService(UserAccount user, Func<AppDbContext>? createContext = n
         return Command(HttpMethod.Post, $"groups/{groupId}/tasks/{taskId}/start", null);
     }
 
-    public async Task Synchronize()
+    public async Task Synchronize(CancellationToken cancellation = default)
     {
         if (!await _syncLock.WaitAsync(0))
         {
@@ -73,6 +73,7 @@ public class TeamService(UserAccount user, Func<AppDbContext>? createContext = n
 
         try
         {
+            cancellation.ThrowIfCancellationRequested();
             var connection = Connection ?? throw new InvalidOperationException(Texts.Get("Groups.ConnectionNotice"));
             using (var db = _createContext())
             {
@@ -81,17 +82,18 @@ public class TeamService(UserAccount user, Func<AppDbContext>? createContext = n
                 {
                     var task = db.Tasks.Single(t => t.UserId == user.Id && t.GroupAssignmentId == item.Id);
                     await Command(HttpMethod.Post, $"groups/{item.GroupId}/tasks/{item.Id}/complete",
-                        new CompleteAssignmentRequest(task.CompletedAt?.ToUniversalTime() ?? DateTime.UtcNow));
+                        new CompleteAssignmentRequest(task.CompletedAt?.ToUniversalTime() ?? DateTime.UtcNow), cancellation);
                     item.PendingCompletion = false;
-                    await db.SaveChangesAsync();
+                    await db.SaveChangesAsync(cancellation);
                 }
             }
-            var groups = await Request<List<GroupInfo>>(HttpMethod.Get, "groups");
+            var groups = await Request<List<GroupInfo>>(HttpMethod.Get, "groups", cancellation: cancellation);
             var details = new List<GroupDetails>();
             foreach (var group in groups)
             {
-                details.Add(await Request<GroupDetails>(HttpMethod.Get, $"groups/{group.Id}"));
+                details.Add(await Request<GroupDetails>(HttpMethod.Get, $"groups/{group.Id}", cancellation: cancellation));
             }
+            cancellation.ThrowIfCancellationRequested();
             // Замінюємо кеш тільки після отримання всієї відповіді. Обрив мережі не видаляє локальні дані.
             using var context = _createContext();
             using var transaction = context.Database.BeginTransaction();
@@ -154,6 +156,7 @@ public class TeamService(UserAccount user, Func<AppDbContext>? createContext = n
                     }
                 }
             }
+            cancellation.ThrowIfCancellationRequested();
             context.SaveChanges();
             transaction.Commit();
         }
@@ -210,15 +213,17 @@ public class TeamService(UserAccount user, Func<AppDbContext>? createContext = n
     private async Task Command(
         HttpMethod method,
         string path,
-        object? data
+        object? data,
+        CancellationToken cancellation = default
     )
     {
-        await Request<JsonElement?>(method, path, data);
+        await Request<JsonElement?>(method, path, data, cancellation);
     }
     private Task<T> Request<T>(
         HttpMethod method,
         string path,
-        object? data = null
+        object? data = null,
+        CancellationToken cancellation = default
     )
     {
         var connection = Connection ?? throw new InvalidOperationException(Texts.Get("Groups.ConnectionNotice"));
@@ -263,6 +268,6 @@ public class TeamService(UserAccount user, Func<AppDbContext>? createContext = n
             throw new InvalidOperationException(Texts.Get("Errors.UnknownGroupAction"));
         }
 
-        return NeonGateway.Request<T>(action, payload, _connections.Secret("ChronifyNeon"));
+        return NeonGateway.Request<T>(action, payload, _connections.Secret("ChronifyNeon"), cancellation);
     }
 }

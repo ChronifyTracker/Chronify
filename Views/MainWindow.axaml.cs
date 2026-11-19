@@ -8,6 +8,7 @@ namespace Chronify.Views;
 public partial class MainWindow : Window
 {
     private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromMinutes(1) };
+    private readonly DispatcherTimer _groupsTimer = new() { Interval = TimeSpan.FromSeconds(5) };
 
     public MainWindow()
     {
@@ -24,8 +25,29 @@ public partial class MainWindow : Window
                 viewModel.Refresh();
             }
         };
-        Opened += (_, _) => _timer.Start();
-        Closed += (_, _) => _timer.Stop();
+        _groupsTimer.Tick += RefreshGroups;
+        Opened += (_, _) =>
+        {
+            _timer.Start();
+            _groupsTimer.Start();
+        };
+        Closed += (_, _) =>
+        {
+            _timer.Stop();
+            _groupsTimer.Stop();
+            if (DataContext is MainWindowViewModel viewModel)
+            {
+                viewModel.GroupsPage.StopAutomaticRefresh();
+            }
+        };
+    }
+
+    private async void RefreshGroups(object? sender, EventArgs e)
+    {
+        if (DataContext is MainWindowViewModel { IsGroupsPage: true } viewModel)
+        {
+            await viewModel.GroupsPage.RefreshAutomatically();
+        }
     }
 
     private MainWindowViewModel ViewModel => (MainWindowViewModel)DataContext!;

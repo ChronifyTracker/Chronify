@@ -9,7 +9,13 @@ namespace Chronify.ViewModels;
 public partial class GroupsViewModel : AsyncPageViewModel
 {
     private readonly TeamService _service;
+    private readonly SemaphoreSlim _operationLock = new(1, 1);
+    private readonly CancellationTokenSource _automaticRefreshCancellation = new();
+    private bool _automaticRefreshStopped;
     public event Action? DataChanged;
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(HasRefreshNotice))]
+    public partial string? RefreshNotice { get; set; }
+    public bool HasRefreshNotice => !string.IsNullOrEmpty(RefreshNotice);
     [ObservableProperty]
     public partial string GroupName { get; set; } = "";
     [ObservableProperty]
@@ -130,6 +136,11 @@ public partial class GroupsViewModel : AsyncPageViewModel
 
     public override void RefreshLanguage()
     {
+        if (_automaticRefreshStopped)
+        {
+            base.RefreshLanguage();
+            return;
+        }
         Guid? memberId = SelectedMember?.Id;
         Guid? assigneeId = Assignee?.Id;
         Guid? taskId = SelectedTask?.Id;
@@ -137,12 +148,19 @@ public partial class GroupsViewModel : AsyncPageViewModel
         SelectedMember = Members.FirstOrDefault(member => member.Id == memberId);
         Assignee = Assignees.FirstOrDefault(member => member.Id == assigneeId);
         SelectedTask = Tasks.FirstOrDefault(task => task.Id == taskId);
+        if (RefreshNotice is not null)
+        {
+            RefreshNotice = Texts.Get("Groups.RefreshFailed");
+        }
         base.RefreshLanguage();
     }
 
     public void RefreshCache()
     {
         Guid? selectedId = SelectedGroup?.Id;
+        Guid? memberId = SelectedMember?.Id;
+        Guid? assigneeId = Assignee?.Id;
+        Guid? taskId = SelectedTask?.Id;
         Groups.Clear();
         foreach (var group in _service.Groups())
         {
@@ -150,6 +168,12 @@ public partial class GroupsViewModel : AsyncPageViewModel
         }
 
         SelectedGroup = Groups.FirstOrDefault(g => g.Id == selectedId) ?? Groups.FirstOrDefault();
+        if (SelectedGroup?.Id == selectedId)
+        {
+            SelectedMember = Members.FirstOrDefault(member => member.Id == memberId);
+            Assignee = Assignees.FirstOrDefault(member => member.Id == assigneeId);
+            SelectedTask = Tasks.FirstOrDefault(task => task.Id == taskId);
+        }
         OnPropertyChanged(nameof(IsConnected));
         OnPropertyChanged(nameof(ConnectionNotice));
     }
@@ -189,20 +213,86 @@ public partial class GroupsViewModel : AsyncPageViewModel
     [RelayCommand]
     private Task Synchronize()
     {
-        return RunAsync(Sync);
+        return RunGroupAction(Sync);
+    }
+
+    public async Task RefreshAutomatically(CancellationToken cancellation = default)
+    {
+        // Фоновий запит не перериває ручну дію та не запускається повторно, поки попередній ще триває.
+        if (_automaticRefreshStopped || IsBusy || cancellation.IsCancellationRequested || !await _operationLock.WaitAsync(0))
+        {
+            return;
+        }
+
+        try
+        {
+            if (!IsConnected)
+            {
+                return;
+            }
+            using var refreshCancellation = CancellationTokenSource.CreateLinkedTokenSource(
+                cancellation,
+                _automaticRefreshCancellation.Token
+            );
+            await _service.Synchronize(refreshCancellation.Token);
+            refreshCancellation.Token.ThrowIfCancellationRequested();
+            RefreshCache();
+            RefreshNotice = null;
+            DataChanged?.Invoke();
+        }
+        catch (OperationCanceledException) when (cancellation.IsCancellationRequested || _automaticRefreshStopped)
+        {
+            // Вікно закрито. Кеш та черга незавершених оновлень залишаються в SQLite.
+        }
+        catch (Exception)
+        {
+            RefreshNotice = Texts.Get("Groups.RefreshFailed");
+        }
+        finally
+        {
+            _operationLock.Release();
+        }
+    }
+
+    public void StopAutomaticRefresh()
+    {
+        if (_automaticRefreshStopped)
+        {
+            return;
+        }
+        _automaticRefreshStopped = true;
+        _automaticRefreshCancellation.Cancel();
+        _automaticRefreshCancellation.Dispose();
+    }
+
+    private Task RunGroupAction(Func<Task> action)
+    {
+        return RunAsync(async () =>
+        {
+            await _operationLock.WaitAsync();
+            try
+            {
+                await action();
+            }
+            finally
+            {
+                _operationLock.Release();
+            }
+        });
     }
 
     private async Task Sync()
     {
         await _service.Synchronize();
         RefreshCache();
+        RefreshNotice = null;
         DataChanged?.Invoke();
         Message = Texts.Get("Groups.Synchronized");
     }
     [RelayCommand]
     private Task CreateGroup()
     {
-        return RunAsync(async () =>
+        return RunGroupAction(async () =>
         {
             await _service.CreateGroup(GroupName);
             GroupName = "";
@@ -213,7 +303,7 @@ public partial class GroupsViewModel : AsyncPageViewModel
     [RelayCommand]
     private Task JoinGroup()
     {
-        return RunAsync(async () =>
+        return RunGroupAction(async () =>
         {
             await _service.Join(InviteCode);
             InviteCode = "";
@@ -235,7 +325,7 @@ public partial class GroupsViewModel : AsyncPageViewModel
 
     private Task SetRole(TeamRole role)
     {
-        return RunAsync(async () =>
+        return RunGroupAction(async () =>
         {
             if (SelectedGroup is null || SelectedMember is null)
             {
@@ -249,7 +339,7 @@ public partial class GroupsViewModel : AsyncPageViewModel
     [RelayCommand]
     private Task AssignTask()
     {
-        return RunAsync(async () =>
+        return RunGroupAction(async () =>
         {
             if (SelectedGroup is null || Assignee is null)
             {
@@ -273,7 +363,7 @@ public partial class GroupsViewModel : AsyncPageViewModel
     [RelayCommand]
     private Task StartTask()
     {
-        return RunAsync(async () =>
+        return RunGroupAction(async () =>
         {
             if (SelectedGroup is null || SelectedTask is null)
             {

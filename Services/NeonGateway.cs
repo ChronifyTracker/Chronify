@@ -10,16 +10,18 @@ public static class NeonGateway
     public static async Task<T> Request<T>(
         string action,
         object? data = null,
-        string? token = null
+        string? token = null,
+        CancellationToken cancellation = default
     )
     {
         await using var connection = new NpgsqlConnection(NeonConfiguration.RuntimeConnection);
-        await connection.OpenAsync();
+        await connection.OpenAsync(cancellation);
         return await Request<T>(
             connection,
             action,
             data,
-            token
+            token,
+            cancellation
         );
     }
 
@@ -27,7 +29,8 @@ public static class NeonGateway
         NpgsqlConnection connection,
         string action,
         object? data = null,
-        string? token = null
+        string? token = null,
+        CancellationToken cancellation = default
     )
     {
         await using var command = new NpgsqlCommand(
@@ -46,7 +49,7 @@ public static class NeonGateway
         );
         try
         {
-            string result = (string)(await command.ExecuteScalarAsync())!;
+            string result = (string)(await command.ExecuteScalarAsync(cancellation))!;
             return JsonSerializer.Deserialize<T>(result, new JsonSerializerOptions(JsonSerializerDefaults.Web))!;
         }
         catch (PostgresException ex) when (ex.SqlState == "P0001")
