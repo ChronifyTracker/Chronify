@@ -1,0 +1,72 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:Chronify.ViewModels" x:Class="Chronify.Views.PlanningView" x:DataType="vm:PlanningViewModel">
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Spacing="18" Margin="0,0,10,20">
+            <TextBlock Text="План на день" Classes="section" />
+            <Grid ColumnDefinitions="*,16,*,16,Auto">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="Доступно сегодня, мин" />
+                    <NumericUpDown Value="{Binding AvailableMinutes}" Minimum="1" Maximum="1440" FormatString="0" />
+                </StackPanel>
+                <StackPanel Grid.Column="2" Spacing="6">
+                    <TextBlock Text="Дневная норма, мин" />
+                    <NumericUpDown Value="{Binding DailyLimit}" Minimum="1" Maximum="1440" FormatString="0" />
+                </StackPanel>
+                <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="8" VerticalAlignment="Bottom">
+                    <Button Content="Сохранить лимиты" Command="{Binding SaveLimitsCommand}" />
+                    <Button Content="Составить план" Classes="primary" Command="{Binding BuildPlanCommand}" />
+                </StackPanel>
+            </Grid>
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="#FF8DA9" TextWrapping="Wrap" />
+            <TextBlock Text="{Binding PlanSummary}" TextWrapping="Wrap" />
+            <TextBlock Text="Задачи без оценки времени не включаются в план. Приоритет учитывает важность, срок и длительность." Classes="muted" TextWrapping="Wrap" />
+            <ItemsControl ItemsSource="{Binding FocusTasks}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:TaskCard">
+                        <Border Classes="panel" Padding="14" Margin="0,0,0,8">
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding Details}" Classes="muted" />
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <TextBlock Text="Календарь нагрузки" Classes="section" />
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <Button Content="‹" Command="{Binding PreviousMonthCommand}" />
+                <TextBlock Grid.Column="1" Text="{Binding MonthTitle}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="18" />
+                <Button Grid.Column="2" Content="›" Command="{Binding NextMonthCommand}" />
+            </Grid>
+            <ItemsControl ItemsSource="{Binding Weekdays}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Columns="7" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="x:String">
+                        <TextBlock Text="{Binding}" HorizontalAlignment="Center" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <ItemsControl ItemsSource="{Binding Calendar}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Columns="7" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:CalendarDay">
+                        <Border Background="{Binding Background}" CornerRadius="6" Margin="3" Padding="8" MinHeight="75">
+                            <StackPanel Spacing="6">
+                                <TextBlock Text="{Binding Number}" FontWeight="Bold" />
+                                <TextBlock Text="{Binding Load}" FontSize="11" TextWrapping="Wrap" Classes="muted" />
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <TextBlock Text="Красный — дневная норма превышена. Учитываются незавершённые задачи с дедлайном на этот день." Classes="muted" TextWrapping="Wrap" />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

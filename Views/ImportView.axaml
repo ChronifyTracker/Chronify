@@ -1,0 +1,33 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:Chronify.ViewModels" x:Class="Chronify.Views.ImportView" x:DataType="vm:ImportViewModel">
+    <Grid RowDefinitions="Auto,*,Auto">
+        <StackPanel Spacing="12" Margin="0,0,0,16">
+            <TextBlock Text="{Binding ProviderName}" Classes="section" />
+            <TextBlock Text="Импорт создаёт самостоятельные локальные задачи. Изменения в Chronify не отправляются в сервис." Classes="muted" TextWrapping="Wrap" />
+            <ComboBox ItemsSource="{Binding Sources}" SelectedItem="{Binding SelectedSource}" HorizontalAlignment="Stretch" IsEnabled="{Binding !IsBusy}" />
+            <CheckBox Content="Загрузить задачи из всех доступных курсов / таблиц" IsChecked="{Binding AllSources}" IsEnabled="{Binding !IsBusy}" />
+            <WrapPanel IsEnabled="{Binding !IsBusy}">
+                <Button Content="Загрузить список задач" Command="{Binding LoadTasksCommand}" Margin="0,0,8,0" />
+                <Button Content="Выбрать все" Command="{Binding SelectAllCommand}" Margin="0,0,8,0" />
+                <Button Content="Снять выбор" Command="{Binding SelectNoneCommand}" />
+            </WrapPanel>
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="#FF8DA9" TextWrapping="Wrap" />
+            <TextBlock Text="{Binding Message}" Foreground="#81C784" TextWrapping="Wrap" />
+        </StackPanel>
+        <ListBox Grid.Row="1" ItemsSource="{Binding Tasks}" IsEnabled="{Binding !IsBusy}">
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:ImportRow">
+                    <Grid ColumnDefinitions="Auto,*,Auto" Margin="4,8">
+                        <CheckBox IsChecked="{Binding IsSelected}" Margin="0,0,12,0" />
+                        <TextBlock Grid.Column="1" Text="{Binding Title}" TextWrapping="Wrap" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="2" Text="{Binding Deadline}" Classes="muted" Margin="16,0,0,0" VerticalAlignment="Center" />
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="12" Margin="0,16,0,0">
+            <Button Content="Импортировать выбранные" Command="{Binding ImportSelectedCommand}" Classes="primary" IsEnabled="{Binding !IsBusy}" />
+            <Button Content="Импортировать все" Command="{Binding ImportAllCommand}" IsEnabled="{Binding !IsBusy}" />
+            <Button Content="Отменить" Command="{Binding CancelCommand}" IsVisible="{Binding IsBusy}" />
+        </StackPanel>
+    </Grid>
+</UserControl>

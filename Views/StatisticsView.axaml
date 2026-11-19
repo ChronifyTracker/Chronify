@@ -1,0 +1,48 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:Chronify.ViewModels" xmlns:services="using:Chronify.Services" x:Class="Chronify.Views.StatisticsView" x:DataType="vm:StatisticsViewModel">
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Spacing="20" Margin="0,0,10,20">
+            <StackPanel Orientation="Horizontal" Spacing="12">
+                <ComboBox ItemsSource="{Binding Periods}" SelectedIndex="{Binding PeriodIndex}" Width="180" />
+                <CalendarDatePicker SelectedDate="{Binding SelectedDate}" Width="180" />
+                <TextBlock Text="{Binding PeriodLabel}" VerticalAlignment="Center" />
+            </StackPanel>
+            <Grid ColumnDefinitions="*,12,*,12,*,12,*">
+                <Border Classes="panel" Padding="16">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Активные" Classes="muted" />
+                        <TextBlock Text="{Binding Active}" FontSize="28" />
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="2" Classes="panel" Padding="16">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Просроченные" Classes="muted" />
+                        <TextBlock Text="{Binding Overdue}" FontSize="28" Foreground="#FF8DA9" />
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="4" Classes="panel" Padding="16">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Завершённые" Classes="muted" />
+                        <TextBlock Text="{Binding Completed}" FontSize="28" />
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="6" Classes="panel" Padding="16">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Выполнены вовремя" Classes="muted" />
+                        <TextBlock Text="{Binding OnTimeRate}" FontSize="24" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+            <TextBlock Text="Нагрузка по категориям" Classes="section" />
+            <DataGrid ItemsSource="{Binding Categories}" IsReadOnly="True" AutoGenerateColumns="False" MinHeight="180">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Категория" Binding="{Binding Category}" Width="*" />
+                    <DataGridTextColumn Header="Задач" Binding="{Binding TaskCount}" />
+                    <DataGridTextColumn Header="План, мин" Binding="{Binding PlannedMinutes}" />
+                    <DataGridTextColumn Header="Факт, мин" Binding="{Binding ActualMinutes}" />
+                </DataGrid.Columns>
+            </DataGrid>
+            <TextBlock Text="Активные и просроченные задачи учитываются по дедлайну, а без срока — по дате создания. Процент вовремя считается среди завершённых за период задач с известным дедлайном и временем завершения. Фактическое время учитывается по дате рабочей сессии." Classes="muted" TextWrapping="Wrap" />
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="#FF8DA9" TextWrapping="Wrap" />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

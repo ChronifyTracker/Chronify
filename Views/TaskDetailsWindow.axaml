@@ -1,0 +1,16 @@
+<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:Chronify.ViewModels" x:Class="Chronify.Views.TaskDetailsWindow" x:DataType="vm:TaskDetailsViewModel" Title="Условия задачи" Width="720" Height="640" MinWidth="500" MinHeight="400" WindowStartupLocation="CenterOwner">
+    <Grid RowDefinitions="Auto,*,Auto,Auto" Margin="24">
+        <TextBlock Text="{Binding Title}" Classes="section" TextWrapping="Wrap" Margin="0,0,0,16" />
+        <TextBox Grid.Row="1" Text="{Binding Description}" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" />
+        <ScrollViewer Grid.Row="2" MaxHeight="150" HorizontalScrollBarVisibility="Disabled">
+        <ItemsControl ItemsSource="{Binding Attachments}" Margin="0,12,0,0">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:AttachmentInfo">
+                    <Button Content="{Binding Name}" Click="OpenAttachment" Margin="0,0,0,6" />
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        </ScrollViewer>
+        <TextBlock Grid.Row="3" Text="{Binding ErrorMessage}" Foreground="#FF8DA9" TextWrapping="Wrap" />
+    </Grid>
+</Window>

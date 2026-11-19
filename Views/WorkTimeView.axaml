@@ -1,0 +1,54 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:Chronify.ViewModels" x:Class="Chronify.Views.WorkTimeView" x:DataType="vm:WorkTimeViewModel">
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Spacing="16" Margin="0,0,10,20">
+            <TextBlock Text="Запись рабочего времени" Classes="section" />
+            <TextBlock Text="Выберите задачу и добавьте фактически потраченное время." Classes="muted" />
+            <Grid ColumnDefinitions="2*,12,*,12,*">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="Задача" />
+                    <ComboBox ItemsSource="{Binding Tasks}" SelectedItem="{Binding SelectedTask}" HorizontalAlignment="Stretch">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:TaskChoice">
+                                <TextBlock Text="{Binding Title}" TextTrimming="CharacterEllipsis" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </StackPanel>
+                <StackPanel Grid.Column="2" Spacing="6">
+                    <TextBlock Text="Дата" />
+                    <CalendarDatePicker SelectedDate="{Binding SessionDate}" HorizontalAlignment="Stretch" />
+                </StackPanel>
+                <StackPanel Grid.Column="4" Spacing="6">
+                    <TextBlock Text="Минуты" />
+                    <NumericUpDown Value="{Binding Minutes}" Minimum="1" Maximum="1440" FormatString="0" />
+                </StackPanel>
+            </Grid>
+            <Grid ColumnDefinitions="*,12,Auto">
+                <TextBox Text="{Binding Note}" Watermark="Комментарий к работе (необязательно)" MaxLength="500" />
+                <Button Grid.Column="2" Content="Добавить время" Classes="primary" Command="{Binding AddSessionCommand}" />
+            </Grid>
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="#FF8DA9" TextWrapping="Wrap" />
+            <TextBlock Text="План и факт" Classes="section" />
+            <DataGrid ItemsSource="{Binding Comparison}" IsReadOnly="True" AutoGenerateColumns="False" MinHeight="150" MaxHeight="250">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Задача" Binding="{Binding Task}" Width="*" />
+                    <DataGridTextColumn Header="План, мин" Binding="{Binding Planned}" />
+                    <DataGridTextColumn Header="Факт, мин" Binding="{Binding Actual}" />
+                    <DataGridTextColumn Header="Отклонение" Binding="{Binding Difference}" />
+                </DataGrid.Columns>
+            </DataGrid>
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="История сессий" Classes="section" VerticalAlignment="Center" />
+                <Button Grid.Column="1" Content="Удалить выбранную запись" Command="{Binding DeleteSessionCommand}" />
+            </Grid>
+            <DataGrid ItemsSource="{Binding Sessions}" SelectedItem="{Binding SelectedSession}" IsReadOnly="True" AutoGenerateColumns="False" MinHeight="150" MaxHeight="280">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Задача" Binding="{Binding Task}" Width="*" />
+                    <DataGridTextColumn Header="Дата" Binding="{Binding Date}" />
+                    <DataGridTextColumn Header="Минуты" Binding="{Binding Minutes}" />
+                    <DataGridTextColumn Header="Комментарий" Binding="{Binding Note}" Width="*" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

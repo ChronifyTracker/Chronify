@@ -1,0 +1,22 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:Chronify.ViewModels" xmlns:views="using:Chronify.Views" x:Class="Chronify.Views.AccountView" x:DataType="vm:AccountViewModel">
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+    <Border Classes="panel" Padding="24" MaxWidth="600" HorizontalAlignment="Left" VerticalAlignment="Top">
+        <StackPanel Spacing="16">
+            <TextBlock Text="Аккаунт Chronify" Classes="section" />
+            <TextBlock Text="Электронная почта" Classes="muted" />
+            <TextBlock Text="{Binding Email}" />
+            <TextBlock Text="Дата регистрации" Classes="muted" />
+            <TextBlock Text="{Binding CreatedAt}" />
+            <TextBlock Text="Имя" />
+            <TextBox Text="{Binding DisplayName}" MaxLength="80" />
+            <Button Content="Сохранить имя" Classes="primary" Command="{Binding SaveProfileCommand}" />
+            <TextBlock Text="{Binding Message}" Foreground="#81C784" />
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="#FF8DA9" TextWrapping="Wrap" />
+            <TextBlock Text="Задачи, категории, фильтры и настройки доступны только в этом аккаунте." Classes="muted" TextWrapping="Wrap" />
+            <Button Content="Выйти из аккаунта" Command="{Binding LogoutCommand}" />
+            <Border Height="1" Background="#302A33" Margin="0,8" />
+            <views:IntegrationsView DataContext="{Binding Integrations}" />
+        </StackPanel>
+    </Border>
+    </ScrollViewer>
+</UserControl>

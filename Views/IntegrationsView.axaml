@@ -1,0 +1,24 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:Chronify.ViewModels" x:Class="Chronify.Views.IntegrationsView" x:DataType="vm:IntegrationsViewModel">
+    <StackPanel Spacing="12">
+        <TextBlock Text="Импорт из сервисов" Classes="section" />
+        <TextBlock Text="{Binding Status}" Classes="muted" TextWrapping="Wrap" />
+        <TextBlock Text="Google Classroom" FontWeight="SemiBold" />
+        <TextBlock Text="OAuth-приложение Google типа Desktop app. После подключения выбирайте задания через «Добавить задачу»." Classes="muted" TextWrapping="Wrap" />
+        <TextBox Text="{Binding GoogleClientId}" Watermark="Google Client ID" IsEnabled="{Binding !IsBusy}" />
+        <TextBox Text="{Binding GoogleClientSecret}" Watermark="Google Client secret" PasswordChar="●" IsEnabled="{Binding !IsBusy}" />
+        <WrapPanel IsEnabled="{Binding !IsBusy}">
+            <Button Content="Подключить Google через браузер" Command="{Binding ConnectClassroomCommand}" Margin="0,0,8,8" />
+            <Button Content="Отключить Classroom" Command="{Binding DisconnectClassroomCommand}" IsEnabled="{Binding HasClassroom}" />
+        </WrapPanel>
+        <TextBlock Text="Notion" FontWeight="SemiBold" />
+        <TextBlock Text="Введите персональный токен или токен внутреннего подключения Notion. Предоставьте ему доступ к таблице Tasks. Текст страниц будет сохранён как описание задач." Classes="muted" TextWrapping="Wrap" />
+        <TextBox Text="{Binding NotionToken}" Watermark="Токен Notion" PasswordChar="●" IsEnabled="{Binding !IsBusy}" />
+        <StackPanel Orientation="Horizontal" Spacing="8" IsEnabled="{Binding !IsBusy}">
+            <Button Content="Подключить Notion" Command="{Binding ConnectNotionCommand}" />
+            <Button Content="Отключить Notion" Command="{Binding DisconnectNotionCommand}" IsEnabled="{Binding HasNotion}" />
+        </StackPanel>
+        <Button Content="Отменить подключение" Command="{Binding CancelCommand}" IsVisible="{Binding IsBusy}" />
+        <TextBlock Text="{Binding Message}" Foreground="#81C784" TextWrapping="Wrap" />
+        <TextBlock Text="{Binding ErrorMessage}" Foreground="#FF8DA9" TextWrapping="Wrap" />
+    </StackPanel>
+</UserControl>
