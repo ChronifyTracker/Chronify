@@ -1,11 +1,11 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:Chronify.ViewModels" x:Class="Chronify.Views.WorkTimeView" x:DataType="vm:WorkTimeViewModel">
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:loc="using:Chronify.Localization" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:Chronify.ViewModels" x:Class="Chronify.Views.WorkTimeView" x:DataType="vm:WorkTimeViewModel">
     <ScrollViewer HorizontalScrollBarVisibility="Disabled">
         <StackPanel Spacing="16" Margin="0,0,10,20">
-            <TextBlock Text="Запись рабочего времени" Classes="section" />
-            <TextBlock Text="Выберите задачу и добавьте фактически потраченное время." Classes="muted" />
+            <TextBlock Text="{loc:Translate WorkTime.Heading}" Classes="section" />
+            <TextBlock Text="{loc:Translate WorkTime.Hint}" Classes="muted" />
             <Grid ColumnDefinitions="2*,12,*,12,*">
                 <StackPanel Spacing="6">
-                    <TextBlock Text="Задача" />
+                    <TextBlock Text="{loc:Translate WorkTime.Task}" />
                     <ComboBox ItemsSource="{Binding Tasks}" SelectedItem="{Binding SelectedTask}" HorizontalAlignment="Stretch">
                         <ComboBox.ItemTemplate>
                             <DataTemplate x:DataType="vm:TaskChoice">
@@ -15,38 +15,38 @@
                     </ComboBox>
                 </StackPanel>
                 <StackPanel Grid.Column="2" Spacing="6">
-                    <TextBlock Text="Дата" />
+                    <TextBlock Text="{loc:Translate Common.Date}" />
                     <CalendarDatePicker SelectedDate="{Binding SessionDate}" HorizontalAlignment="Stretch" />
                 </StackPanel>
                 <StackPanel Grid.Column="4" Spacing="6">
-                    <TextBlock Text="Минуты" />
+                    <TextBlock Text="{loc:Translate WorkTime.Minutes}" />
                     <NumericUpDown Value="{Binding Minutes}" Minimum="1" Maximum="1440" FormatString="0" />
                 </StackPanel>
             </Grid>
             <Grid ColumnDefinitions="*,12,Auto">
-                <TextBox Text="{Binding Note}" Watermark="Комментарий к работе (необязательно)" MaxLength="500" />
-                <Button Grid.Column="2" Content="Добавить время" Classes="primary" Command="{Binding AddSessionCommand}" />
+                <TextBox Text="{Binding Note}" Watermark="{loc:Translate WorkTime.NotePlaceholder}" MaxLength="500" />
+                <Button Grid.Column="2" Content="{loc:Translate WorkTime.Add}" Classes="primary" Command="{Binding AddSessionCommand}" />
             </Grid>
             <TextBlock Text="{Binding ErrorMessage}" Foreground="#FF8DA9" TextWrapping="Wrap" />
-            <TextBlock Text="План и факт" Classes="section" />
+            <TextBlock Text="{loc:Translate WorkTime.Comparison}" Classes="section" />
             <DataGrid ItemsSource="{Binding Comparison}" IsReadOnly="True" AutoGenerateColumns="False" MinHeight="150" MaxHeight="250">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Задача" Binding="{Binding Task}" Width="*" />
-                    <DataGridTextColumn Header="План, мин" Binding="{Binding Planned}" />
-                    <DataGridTextColumn Header="Факт, мин" Binding="{Binding Actual}" />
-                    <DataGridTextColumn Header="Отклонение" Binding="{Binding Difference}" />
+                    <DataGridTextColumn Header="{loc:Translate WorkTime.Task}" Binding="{Binding Task}" Width="*" />
+                    <DataGridTextColumn Header="{loc:Translate WorkTime.PlannedMinutes}" Binding="{Binding Planned}" />
+                    <DataGridTextColumn Header="{loc:Translate WorkTime.ActualMinutes}" Binding="{Binding Actual}" />
+                    <DataGridTextColumn Header="{loc:Translate WorkTime.DifferenceLabel}" Binding="{Binding Difference}" />
                 </DataGrid.Columns>
             </DataGrid>
             <Grid ColumnDefinitions="*,Auto">
-                <TextBlock Text="История сессий" Classes="section" VerticalAlignment="Center" />
-                <Button Grid.Column="1" Content="Удалить выбранную запись" Command="{Binding DeleteSessionCommand}" />
+                <TextBlock Text="{loc:Translate WorkTime.History}" Classes="section" VerticalAlignment="Center" />
+                <Button Grid.Column="1" Content="{loc:Translate WorkTime.Delete}" Command="{Binding DeleteSessionCommand}" />
             </Grid>
             <DataGrid ItemsSource="{Binding Sessions}" SelectedItem="{Binding SelectedSession}" IsReadOnly="True" AutoGenerateColumns="False" MinHeight="150" MaxHeight="280">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Задача" Binding="{Binding Task}" Width="*" />
-                    <DataGridTextColumn Header="Дата" Binding="{Binding Date}" />
-                    <DataGridTextColumn Header="Минуты" Binding="{Binding Minutes}" />
-                    <DataGridTextColumn Header="Комментарий" Binding="{Binding Note}" Width="*" />
+                    <DataGridTextColumn Header="{loc:Translate WorkTime.Task}" Binding="{Binding Task}" Width="*" />
+                    <DataGridTextColumn Header="{loc:Translate Common.Date}" Binding="{Binding Date}" />
+                    <DataGridTextColumn Header="{loc:Translate WorkTime.Minutes}" Binding="{Binding Minutes}" />
+                    <DataGridTextColumn Header="{loc:Translate WorkTime.Note}" Binding="{Binding Note}" Width="*" />
                 </DataGrid.Columns>
             </DataGrid>
         </StackPanel>

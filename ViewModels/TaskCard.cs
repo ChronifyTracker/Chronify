@@ -38,19 +38,19 @@ public record TaskCard
         Description = task.Description;
         Priority = task.Priority switch
         {
-            TaskPriority.Critical => "Критический",
-            TaskPriority.High => "Высокий",
-            TaskPriority.Medium => "Средний",
-            TaskPriority.Low => "Низкий",
-            _ => "Отложено"
+            TaskPriority.Critical => Texts.Get("Priority.Critical"),
+            TaskPriority.High => Texts.Get("Priority.High"),
+            TaskPriority.Medium => Texts.Get("Priority.Medium"),
+            TaskPriority.Low => Texts.Get("Priority.Low"),
+            _ => Texts.Get("Priority.Deferred")
         };
         Status = task.Status switch
         {
-            TaskStatus.InProgress => "В работе",
-            TaskStatus.Completed => "Завершена",
-            _ => "Новая"
+            TaskStatus.InProgress => Texts.Get("Status.InProgress"),
+            TaskStatus.Completed => Texts.Get("Status.Completed"),
+            _ => Texts.Get("Status.New")
         };
-        DueDate = task.DueDate?.ToString("dd.MM.yyyy · HH:mm") ?? "Без срока";
+        DueDate = task.DueDate is DateTime dueDate ? Texts.DateTime(dueDate) : Texts.Get("Tasks.NoDueDate");
         Category = task.Category?.Name ?? "";
         CategoryColor = task.Category?.Color ?? "#A29AA4";
         ActualMinutes = actualMinutes;
@@ -69,7 +69,7 @@ public record TaskCard
 
         if (IsOverdue)
         {
-            Status = "Просрочена";
+            Status = Texts.Get("Status.Overdue");
         }
 
         Details = DueDate;
@@ -85,7 +85,7 @@ public record TaskCard
 
         if (AssignedByName.Length > 0)
         {
-            Details += $" · От: {AssignedByName}";
+            Details += Texts.Format("Tasks.AssignedBySuffix", AssignedByName);
         }
     }
 }

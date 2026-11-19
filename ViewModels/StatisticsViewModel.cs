@@ -6,7 +6,12 @@ namespace Chronify.ViewModels;
 
 public partial class StatisticsViewModel(ITaskRepository tasks, WorkSessionRepository sessions) : PageViewModel
 {
-    public IReadOnlyList<string> Periods { get; } = ["День", "Неделя", "Месяц"];
+    public IReadOnlyList<LocalizedOption> Periods { get; } =
+    [
+        new("Periods.Day"),
+        new("Periods.Week"),
+        new("Periods.Month")
+    ];
     public ObservableCollection<CategoryStatistics> Categories { get; } = [];
     [ObservableProperty]
     public partial int PeriodIndex { get; set; } = 2;
@@ -21,7 +26,13 @@ public partial class StatisticsViewModel(ITaskRepository tasks, WorkSessionRepos
     [ObservableProperty]
     public partial int Completed { get; set; }
     [ObservableProperty]
-    public partial string OnTimeRate { get; set; } = "Нет данных";
+    public partial string OnTimeRate { get; set; } = Texts.Get("Common.NoData");
+
+    public override void RefreshLanguage()
+    {
+        base.RefreshLanguage();
+        Refresh();
+    }
 
     partial void OnPeriodIndexChanged(int value)
     {
@@ -56,7 +67,7 @@ public partial class StatisticsViewModel(ITaskRepository tasks, WorkSessionRepos
             Overdue = result.Overdue;
             Completed = result.Completed;
             OnTimeRate = result.OnTimeRate;
-            PeriodLabel = $"{from:dd.MM.yyyy} — {to.AddDays(-1):dd.MM.yyyy}";
+            PeriodLabel = $"{Texts.Date(from)} — {Texts.Date(to.AddDays(-1))}";
             Categories.Clear();
             foreach (var row in result.Categories)
             {

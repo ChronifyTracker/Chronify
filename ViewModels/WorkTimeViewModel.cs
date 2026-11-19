@@ -18,7 +18,7 @@ public record PlanFactRow(
     int Actual
 )
 {
-    public string Difference => Planned == 0 ? "План не задан" : $"{Actual - Planned:+0;-0;0} мин";
+    public string Difference => Planned == 0 ? Texts.Get("WorkTime.NoPlan") : Texts.Format("WorkTime.Difference", Actual - Planned);
 }
 
 public partial class WorkTimeViewModel(
@@ -42,6 +42,12 @@ public partial class WorkTimeViewModel(
     public partial string? Note { get; set; }
     public event Action? DataChanged;
 
+    public override void RefreshLanguage()
+    {
+        base.RefreshLanguage();
+        Refresh();
+    }
+
     public void Refresh()
     {
         Run(() =>
@@ -49,6 +55,7 @@ public partial class WorkTimeViewModel(
             var allTasks = tasks.GetAll();
             var allSessions = sessions.GetAll();
             Guid? selectedId = SelectedTask?.Id;
+            Guid? selectedSessionId = SelectedSession?.Id;
             Tasks.Clear();
             Sessions.Clear();
             Comparison.Clear();
@@ -62,12 +69,13 @@ public partial class WorkTimeViewModel(
             {
                 Sessions.Add(new WorkSessionRow(
                     session.Id,
-                    names.GetValueOrDefault(session.TaskId, "Удалённая задача"),
-                    session.StartedAt.ToString("dd.MM.yyyy"),
+                    names.GetValueOrDefault(session.TaskId, Texts.Get("WorkTime.DeletedTask")),
+                    Texts.Date(session.StartedAt),
                     session.Minutes,
                     session.Note
                 ));
             }
+            SelectedSession = Sessions.FirstOrDefault(session => session.Id == selectedSessionId);
             foreach (var task in allTasks)
             {
                 Comparison.Add(new PlanFactRow(task.Title, task.EstimatedMinutes,
@@ -83,15 +91,15 @@ public partial class WorkTimeViewModel(
         {
             if (SelectedTask is null)
             {
-                throw new ArgumentException("Выберите задачу.");
+                throw new ArgumentException(Texts.Get("Errors.SelectTask"));
             }
             if (SessionDate is null)
             {
-                throw new ArgumentException("Укажите дату работы.");
+                throw new ArgumentException(Texts.Get("Errors.WorkDate"));
             }
             if (Minutes is not decimal minutes || minutes != decimal.Truncate(minutes) || minutes is < 1 or > 1440)
             {
-                throw new ArgumentException("Укажите целое число минут от 1 до 1440.");
+                throw new ArgumentException(Texts.Get("Errors.MinutesRange"));
             }
             sessions.Add(new WorkSession(
                 userId,
@@ -113,7 +121,7 @@ public partial class WorkTimeViewModel(
     {
         if (SelectedSession is null)
         {
-            ErrorMessage = "Выберите запись времени.";
+            ErrorMessage = Texts.Get("Errors.SelectWorkSession");
             return;
         }
         if (Run(() => sessions.Delete(SelectedSession.Id)))

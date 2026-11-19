@@ -8,6 +8,6 @@ public sealed class AppDbContextModelSnapshot : ModelSnapshot
 {
     protected override void BuildModel(ModelBuilder modelBuilder)
     {
-        OfflineSchemaModel.Build(modelBuilder);
+        LanguageSchemaModel.Build(modelBuilder);
     }
 }

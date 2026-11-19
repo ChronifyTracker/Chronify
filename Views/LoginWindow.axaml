@@ -1,34 +1,34 @@
-<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:Chronify.ViewModels" x:Class="Chronify.Views.LoginWindow" x:DataType="vm:LoginViewModel" Title="Chronify — вход" Width="520" Height="730" CanResize="False" WindowStartupLocation="CenterScreen">
+<Window xmlns="https://github.com/avaloniaui" xmlns:loc="using:Chronify.Localization" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:Chronify.ViewModels" x:Class="Chronify.Views.LoginWindow" x:DataType="vm:LoginViewModel" Title="{loc:Translate Login.WindowTitle}" Width="520" Height="730" CanResize="False" WindowStartupLocation="CenterScreen">
     <ScrollViewer HorizontalScrollBarVisibility="Disabled">
         <StackPanel Margin="36" Spacing="16">
             <StackPanel Orientation="Horizontal" Spacing="12">
                 <Image Source="/Assets/chronify.png" Width="42" Height="42" Stretch="Uniform" VerticalAlignment="Center" />
                 <TextBlock Text="chronify" FontSize="30" FontWeight="Bold" Foreground="#F34F78" VerticalAlignment="Center" />
             </StackPanel>
-            <TextBlock Text="Личный планировщик задач" Classes="muted" />
-            <ToggleSwitch Content="Создать новый аккаунт" OnContent="Регистрация" OffContent="Вход" IsChecked="{Binding IsRegistration}" IsEnabled="{Binding !IsBusy}" />
+            <TextBlock Text="{loc:Translate Login.Tagline}" Classes="muted" />
+            <ToggleSwitch Content="{loc:Translate Login.NewAccount}" OnContent="{loc:Translate Login.Registration}" OffContent="{loc:Translate Login.SignInTab}" IsChecked="{Binding IsRegistration}" IsEnabled="{Binding !IsBusy}" />
             <TextBlock Text="{Binding Heading}" FontSize="24" FontWeight="SemiBold" />
             <StackPanel Spacing="10" IsEnabled="{Binding !IsBusy}">
                 <StackPanel IsVisible="{Binding IsRegistration}" Spacing="6">
-                    <TextBlock Text="Имя" />
+                    <TextBlock Text="{loc:Translate Account.Name}" />
                     <TextBox x:Name="NameInput" Text="{Binding Name}" MaxLength="80" />
                 </StackPanel>
-                <TextBlock Text="Электронная почта" />
+                <TextBlock Text="{loc:Translate Account.Email}" />
                 <TextBox x:Name="EmailInput" Text="{Binding Email}" Watermark="name@example.com" MaxLength="200" />
-                <TextBlock Text="Пароль" />
+                <TextBlock Text="{loc:Translate Login.Password}" />
                 <TextBox x:Name="PasswordInput" Text="{Binding Password}" PasswordChar="●" MaxLength="128" />
                 <StackPanel IsVisible="{Binding IsRegistration}" Spacing="6">
-                    <TextBlock Text="Повторите пароль" />
+                    <TextBlock Text="{loc:Translate Login.ConfirmPassword}" />
                     <TextBox x:Name="ConfirmPasswordInput" Text="{Binding PasswordConfirmation}" PasswordChar="●" MaxLength="128" />
-                    <TextBlock Text="Пароль: от 8 символов, не более 72 байт UTF-8." Classes="muted" TextWrapping="Wrap" />
+                    <TextBlock Text="{loc:Translate Login.PasswordHint}" Classes="muted" TextWrapping="Wrap" />
                 </StackPanel>
-                <CheckBox Content="Запомнить вход на этом компьютере" IsChecked="{Binding RememberMe}" />
+                <CheckBox Content="{loc:Translate Login.RememberMe}" IsChecked="{Binding RememberMe}" />
             </StackPanel>
             <TextBlock Text="{Binding ErrorMessage}" Foreground="#FF8DA9" TextWrapping="Wrap" />
-            <TextBlock Text="Подождите…" IsVisible="{Binding IsBusy}" Classes="muted" />
+            <TextBlock Text="{loc:Translate Common.PleaseWait}" IsVisible="{Binding IsBusy}" Classes="muted" />
             <Button Content="{Binding SubmitText}" Command="{Binding SubmitCommand}" Classes="primary" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" IsDefault="True" />
-            <TextBlock Text="Для регистрации и первого входа нужен интернет. Сохранённый аккаунт и задачи доступны без сети." Classes="muted" TextWrapping="Wrap" />
-            <TextBlock Text="Первый зарегистрированный пользователь получит существующие локальные задачи и категории." IsVisible="{Binding IsRegistration}" Classes="muted" TextWrapping="Wrap" FontSize="12" />
+            <TextBlock Text="{loc:Translate Login.OnlineHint}" Classes="muted" TextWrapping="Wrap" />
+            <TextBlock Text="{loc:Translate Login.LegacyHint}" IsVisible="{Binding IsRegistration}" Classes="muted" TextWrapping="Wrap" FontSize="12" />
         </StackPanel>
     </ScrollViewer>
 </Window>

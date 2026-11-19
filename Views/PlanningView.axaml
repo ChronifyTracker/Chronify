@@ -1,24 +1,24 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:Chronify.ViewModels" x:Class="Chronify.Views.PlanningView" x:DataType="vm:PlanningViewModel">
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:loc="using:Chronify.Localization" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:Chronify.ViewModels" x:Class="Chronify.Views.PlanningView" x:DataType="vm:PlanningViewModel">
     <ScrollViewer HorizontalScrollBarVisibility="Disabled">
         <StackPanel Spacing="18" Margin="0,0,10,20">
-            <TextBlock Text="План на день" Classes="section" />
+            <TextBlock Text="{loc:Translate Planning.DayPlan}" Classes="section" />
             <Grid ColumnDefinitions="*,16,*,16,Auto">
                 <StackPanel Spacing="6">
-                    <TextBlock Text="Доступно сегодня, мин" />
+                    <TextBlock Text="{loc:Translate Planning.Available}" />
                     <NumericUpDown Value="{Binding AvailableMinutes}" Minimum="1" Maximum="1440" FormatString="0" />
                 </StackPanel>
                 <StackPanel Grid.Column="2" Spacing="6">
-                    <TextBlock Text="Дневная норма, мин" />
+                    <TextBlock Text="{loc:Translate Planning.DailyLimit}" />
                     <NumericUpDown Value="{Binding DailyLimit}" Minimum="1" Maximum="1440" FormatString="0" />
                 </StackPanel>
                 <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="8" VerticalAlignment="Bottom">
-                    <Button Content="Сохранить лимиты" Command="{Binding SaveLimitsCommand}" />
-                    <Button Content="Составить план" Classes="primary" Command="{Binding BuildPlanCommand}" />
+                    <Button Content="{loc:Translate Planning.SaveLimits}" Command="{Binding SaveLimitsCommand}" />
+                    <Button Content="{loc:Translate Planning.BuildPlan}" Classes="primary" Command="{Binding BuildPlanCommand}" />
                 </StackPanel>
             </Grid>
             <TextBlock Text="{Binding ErrorMessage}" Foreground="#FF8DA9" TextWrapping="Wrap" />
             <TextBlock Text="{Binding PlanSummary}" TextWrapping="Wrap" />
-            <TextBlock Text="Задачи без оценки времени не включаются в план. Приоритет учитывает важность, срок и длительность." Classes="muted" TextWrapping="Wrap" />
+            <TextBlock Text="{loc:Translate Planning.EstimateHint}" Classes="muted" TextWrapping="Wrap" />
             <ItemsControl ItemsSource="{Binding FocusTasks}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="vm:TaskCard">
@@ -31,7 +31,7 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-            <TextBlock Text="Календарь нагрузки" Classes="section" />
+            <TextBlock Text="{loc:Translate Planning.Calendar}" Classes="section" />
             <Grid ColumnDefinitions="Auto,*,Auto">
                 <Button Content="‹" Command="{Binding PreviousMonthCommand}" />
                 <TextBlock Grid.Column="1" Text="{Binding MonthTitle}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="18" />
@@ -66,7 +66,7 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-            <TextBlock Text="Красный — дневная норма превышена. Учитываются незавершённые задачи с дедлайном на этот день." Classes="muted" TextWrapping="Wrap" />
+            <TextBlock Text="{loc:Translate Planning.CalendarHint}" Classes="muted" TextWrapping="Wrap" />
         </StackPanel>
     </ScrollViewer>
 </UserControl>

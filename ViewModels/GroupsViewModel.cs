@@ -34,22 +34,19 @@ public partial class GroupsViewModel : AsyncPageViewModel
     public partial int PriorityIndex { get; set; } = 2;
     [ObservableProperty]
     public partial int InitialStatusIndex { get; set; } = 1;
-    public IReadOnlyList<string> Priorities { get; } =
-
+    public IReadOnlyList<LocalizedOption> Priorities { get; } =
     [
-
-        "Отложено",
-
-        "Низкий",
-
-        "Средний",
-
-        "Высокий",
-
-        "Критический"
-
+        new("Priority.Deferred"),
+        new("Priority.Low"),
+        new("Priority.Medium"),
+        new("Priority.High"),
+        new("Priority.Critical")
     ];
-    public IReadOnlyList<string> InitialStatuses { get; } = ["Новая — запущу позже", "В работе — запустить сразу"];
+    public IReadOnlyList<LocalizedOption> InitialStatuses { get; } =
+    [
+        new("Groups.StartLater"),
+        new("Groups.StartNow")
+    ];
     public ObservableCollection<CachedGroup> Groups { get; } = [];
     public ObservableCollection<CachedMember> Members { get; } = [];
     public ObservableCollection<CachedMember> Assignees { get; } = [];
@@ -64,16 +61,32 @@ public partial class GroupsViewModel : AsyncPageViewModel
 
     public bool CanAssign => SelectedGroup?.Role is TeamRole.Administrator or TeamRole.TeamLead;
 
-    public string ConnectionNotice => IsConnected ? "" : "Для работы с группами войдите в Chronify при наличии интернета.";
+    public string ConnectionNotice => IsConnected ? "" : Texts.Get("Groups.ConnectionNotice");
 
     public string GroupDetails
     {
         get
         {
-            return SelectedGroup is null ? "Выберите группу." :
-        $"{SelectedGroup.Name} · {SelectedGroup.Role switch { TeamRole.Administrator => "администратор", TeamRole.TeamLead => "тимлид", TeamRole.Executor => "исполнитель", _ => "без роли" }}\nКопия от {SelectedGroup.UpdatedAt:dd.MM.yyyy HH:mm}" +
-        (IsAdministrator ? "\nКод приглашения: " + SelectedGroup.InviteCode : "") +
-        (SelectedGroup.Role == TeamRole.NoRole ? "\nОжидает назначения роли администратором." : "");
+            if (SelectedGroup is null)
+            {
+                return Texts.Get("Groups.SelectGroup");
+            }
+
+            string details = Texts.Format(
+                "Groups.Snapshot",
+                SelectedGroup.Name,
+                Texts.Role(SelectedGroup.Role),
+                SelectedGroup.UpdatedAt
+            );
+            if (IsAdministrator)
+            {
+                details += Texts.Get("Groups.InviteCodeLine") + SelectedGroup.InviteCode;
+            }
+            if (SelectedGroup.Role == TeamRole.NoRole)
+            {
+                details += Texts.Get("Groups.WaitingRoleLine");
+            }
+            return details;
         }
     }
 
@@ -81,8 +94,23 @@ public partial class GroupsViewModel : AsyncPageViewModel
     {
         get
         {
-            return SelectedTask is null ? "Выберите задачу, чтобы прочитать условия." :
-        $"{SelectedTask.Title}\nПостановщик: {SelectedTask.AssignedByName}\nИсполнитель: {SelectedTask.AssigneeName}\nДедлайн: {SelectedTask.DueDate?.ToString("dd.MM.yyyy HH:mm") ?? "без срока"}\nВажность: {Priorities[SelectedTask.Priority]}\n\n{SelectedTask.Description}";
+            if (SelectedTask is null)
+            {
+                return Texts.Get("Groups.SelectTaskDetails");
+            }
+
+            string dueDate = SelectedTask.DueDate is DateTime date
+                ? Texts.DateTime(date)
+                : Texts.Get("Tasks.NoDueDateLower");
+            return Texts.Format(
+                "Groups.TaskDetails",
+                SelectedTask.Title,
+                SelectedTask.AssignedByName,
+                SelectedTask.AssigneeName,
+                dueDate,
+                Priorities[SelectedTask.Priority],
+                SelectedTask.Description
+            );
         }
     }
 
@@ -98,6 +126,18 @@ public partial class GroupsViewModel : AsyncPageViewModel
     {
         _service = new TeamService(user, createContext);
         RefreshCache();
+    }
+
+    public override void RefreshLanguage()
+    {
+        Guid? memberId = SelectedMember?.Id;
+        Guid? assigneeId = Assignee?.Id;
+        Guid? taskId = SelectedTask?.Id;
+        OnSelectedGroupChanged(SelectedGroup);
+        SelectedMember = Members.FirstOrDefault(member => member.Id == memberId);
+        Assignee = Assignees.FirstOrDefault(member => member.Id == assigneeId);
+        SelectedTask = Tasks.FirstOrDefault(task => task.Id == taskId);
+        base.RefreshLanguage();
     }
 
     public void RefreshCache()
@@ -157,7 +197,7 @@ public partial class GroupsViewModel : AsyncPageViewModel
         await _service.Synchronize();
         RefreshCache();
         DataChanged?.Invoke();
-        Message = "Группы обновлены, результаты выполнения отправлены. Полученные задачи доступны без интернета.";
+        Message = Texts.Get("Groups.Synchronized");
     }
     [RelayCommand]
     private Task CreateGroup()
@@ -199,7 +239,7 @@ public partial class GroupsViewModel : AsyncPageViewModel
         {
             if (SelectedGroup is null || SelectedMember is null)
             {
-                throw new ArgumentException("Выберите участника группы.");
+                throw new ArgumentException(Texts.Get("Errors.SelectMember"));
             }
             await _service.ChangeRole(SelectedGroup.Id, SelectedMember.Id, role);
             await Sync();
@@ -213,7 +253,7 @@ public partial class GroupsViewModel : AsyncPageViewModel
         {
             if (SelectedGroup is null || Assignee is null)
             {
-                throw new ArgumentException("Выберите группу и исполнителя.");
+                throw new ArgumentException(Texts.Get("Errors.SelectAssignee"));
             }
             await _service.Assign(SelectedGroup.Id, new CreateAssignmentRequest(
                 Assignee.Id,
@@ -237,7 +277,7 @@ public partial class GroupsViewModel : AsyncPageViewModel
         {
             if (SelectedGroup is null || SelectedTask is null)
             {
-                throw new ArgumentException("Выберите задачу.");
+                throw new ArgumentException(Texts.Get("Errors.SelectTask"));
             }
             await _service.Start(SelectedGroup.Id, SelectedTask.Id);
             await Sync();

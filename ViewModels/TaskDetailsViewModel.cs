@@ -54,7 +54,7 @@ public partial class TaskDetailsViewModel : AsyncPageViewModel
             ];
             if (!supported.Contains(Path.GetExtension(name).ToLowerInvariant()))
             {
-                throw new InvalidOperationException("Открытие этого типа вложений пока не поддерживается. Файл сохранён в базе данных.");
+                throw new InvalidOperationException(Texts.Get("Errors.AttachmentType"));
             }
             string directory = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),

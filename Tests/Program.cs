@@ -11,6 +11,7 @@ using Chronify.ViewModels;
 using Chronify.Views;
 using Chronify.Services.Imports;
 using Chronify.Teams;
+using Chronify.Localization;
 using System.Net.Http.Json;
 using System.Net.Http.Headers;
 using System.Text.Json;
@@ -62,6 +63,13 @@ try
 {
     CheckMigration();
     CheckAuthentication();
+    if (args.Contains("--localization-only"))
+    {
+        CheckOwnershipAndCrud();
+        CheckAvaloniaLanguagesOnly();
+        Console.WriteLine($"PASS: {checks} checks. Fixtures: {directory}");
+        return;
+    }
     CheckUnifiedAuthentication();
     CheckOwnershipAndCrud();
     CheckAlgorithms();
@@ -131,7 +139,7 @@ void CheckMigration()
     {
         DatabaseInitializer.Initialize(context);
         Check(!context.Database.HasPendingModelChanges(), "Snapshot must match the model");
-        Check(context.Database.GetAppliedMigrations().Count() == 4, "All four migrations must be applied");
+        Check(context.Database.GetAppliedMigrations().Count() == 5, "All five migrations must be applied");
         var task = context.Tasks.Include(t => t.Category).Single();
         Check(task is { Title: "Legacy task", UserId: null, CompletedAt: null, EstimatedMinutes: 30 }
             && task.Category?.Name == "Legacy category", "Legacy tasks and categories must be preserved");
@@ -842,6 +850,7 @@ void CheckAvalonia()
         tasks.GetById(uiTaskId)?.Title == "UI-created edited task",
         "Task edit dialog must persist the copied entity"
     );
+    CheckLocalization(main, mainModel);
     bool logoutRequested = false;
     mainModel.LogoutRequested += () => logoutRequested = true;
     Pump(mainModel.AccountPage.LogoutCommand.ExecuteAsync(null));
@@ -849,6 +858,94 @@ void CheckAvalonia()
         logoutRequested && auth.RestoreSession() is null,
         "Account page must revoke the session and request the login screen"
     );
+    main.Close();
+}
+
+void CheckLocalization(MainWindow main, MainWindowViewModel model)
+{
+    model.ShowAccountCommand.Execute(null);
+    Dispatcher.UIThread.RunJobs();
+    var selector = main.GetVisualDescendants().OfType<AccountView>().Single()
+        .FindControl<ComboBox>("LanguageSelector")!;
+    var formModel = model.CreateAddTask();
+    var form = new AddTaskWindow { DataContext = formModel };
+    form.Show(main);
+    var login = new LoginWindow { DataContext = new LoginViewModel(auth) };
+    login.Show();
+    Dispatcher.UIThread.RunJobs();
+
+    model.FilterStatusIndex = 2;
+    model.FilterPriorityIndex = 3;
+    model.SortIndex = 5;
+    object statusOption = model.StatusFilters[2];
+    model.AccountPage.DisplayName = "Unsaved profile name";
+    model.GroupsPage.TaskTitle = "Чернетка задачі";
+    model.WorkTimePage.Note = "Моя заметка";
+    model.PlanningPage.AvailableMinutes = 135;
+    formModel.Title = "Не переводить название";
+    formModel.Description = "Keep this description";
+    formModel.Minutes = 47;
+    formModel.DueDate = DateTime.Today.AddDays(2);
+    var taskData = tasks.GetAll().Select(task => (task.Id, task.Title, task.Description, task.CategoryId)).OrderBy(task => task.Id).ToList();
+
+    foreach (string code in new[] { "uk", "en", "ru" })
+    {
+        selector.SelectedItem = model.AccountPage.Languages.Single(language => language.Code == code);
+        Dispatcher.UIThread.RunJobs();
+        Check(LocalizationService.Current.LanguageCode == code, "Language selector must update the localization service");
+        Check(preferences.Get().LanguageCode == code, "Language selector must persist the choice in SQLite");
+        Check(main.GetVisualDescendants().OfType<Button>().Any(button => Equals(button.Content, Texts.Get("Navigation.Home"))),
+            "Existing navigation buttons must change language: " + code + "; actual: " + string.Join(", ", main.GetVisualDescendants().OfType<Button>().Where(button => button.Classes.Contains("nav")).Select(button => button.Content)));
+        Check(model.PageTitle == Texts.Get("Navigation.Account"), "The current page heading must change language");
+        Check(form.GetVisualDescendants().OfType<TextBlock>().Any(text => text.Text == Texts.Get("Tasks.NewHeading")),
+            "Already open task dialogs must change language");
+        Check(form.GetVisualDescendants().OfType<TextBlock>().Any(text => text.Text == Texts.Get("Priority.Medium")),
+            "The selected priority label must change language without reopening its dropdown");
+        Check(login.Title == Texts.Get("Login.WindowTitle"), "Already open login windows must change language");
+        Check(main.GetVisualDescendants().OfType<DataGrid>().Any(grid => grid.Columns.Any(column => Equals(column.Header, Texts.Get("Tasks.Status")))),
+            "DataGrid column headers must change language");
+        Check(model.FilterStatusIndex == 2 && model.FilterPriorityIndex == 3 && model.SortIndex == 5
+            && ReferenceEquals(statusOption, model.StatusFilters[2]), "Translation must preserve filter indices and option identity");
+        Check(model.AccountPage.DisplayName == "Unsaved profile name" && model.GroupsPage.TaskTitle == "Чернетка задачі"
+            && model.WorkTimePage.Note == "Моя заметка" && model.PlanningPage.AvailableMinutes == 135,
+            "Translation must preserve unsaved values on every page");
+        Check(formModel.Title == "Не переводить название" && formModel.Description == "Keep this description" && formModel.Minutes == 47,
+            "Translation must preserve a task draft in an open dialog");
+        Check(model.DateText == DateTime.Now.ToString("dddd, d MMMM", LocalizationService.Current.Culture),
+            "The header date must use the selected culture");
+        Check(System.Globalization.CultureInfo.CurrentCulture.Name == LocalizationService.Current.Culture.Name,
+            "The UI thread culture must follow the language selector");
+        Check(form.GetVisualDescendants().OfType<CalendarDatePicker>().Single().Text == Texts.Date(formModel.DueDate!.Value),
+            "An already selected date must be reformatted without losing its value");
+        Check(taskData.SequenceEqual(tasks.GetAll().Select(task => (task.Id, task.Title, task.Description, task.CategoryId)).OrderBy(task => task.Id)),
+            "Switching language must not modify stored task data");
+        Capture(main, "language-" + code);
+        Capture(form, "task-language-" + code);
+    }
+
+    selector.SelectedItem = model.AccountPage.Languages.Single(language => language.Code == "en");
+    Dispatcher.UIThread.RunJobs();
+    LocalizationService.Current.ChangeLanguage("ru");
+    var restored = CreateMain();
+    Check(LocalizationService.Current.LanguageCode == "en" && restored.AccountPage.SelectedLanguage?.Code == "en",
+        "Opening a workspace must restore its saved language");
+    Check(new UserPreferencesRepository(second.Id, contextFactory).Get().LanguageCode == "ru",
+        "Language preferences must be isolated between accounts");
+    selector.SelectedItem = model.AccountPage.Languages.Single(language => language.Code == "ru");
+    Dispatcher.UIThread.RunJobs();
+    login.Close();
+    form.Close();
+}
+
+void CheckAvaloniaLanguagesOnly()
+{
+    AppBuilder.Configure<App>().UseSkia().UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false })
+        .SetupWithoutStarting();
+    var model = CreateMain();
+    var main = new MainWindow { DataContext = model };
+    main.Show();
+    Dispatcher.UIThread.RunJobs();
+    CheckLocalization(main, model);
     main.Close();
 }
 

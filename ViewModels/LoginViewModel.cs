@@ -22,9 +22,9 @@ public partial class LoginViewModel(AuthenticationService authentication) : Page
     public partial bool RememberMe { get; set; } = true;
     [ObservableProperty, NotifyCanExecuteChangedFor(nameof(SubmitCommand))]
     public partial bool IsBusy { get; set; }
-    public string Heading => IsRegistration ? "Создать аккаунт" : "Вход в Chronify";
+    public string Heading => IsRegistration ? Texts.Get("Login.CreateAccount") : Texts.Get("Login.Heading");
 
-    public string SubmitText => IsRegistration ? "Зарегистрироваться" : "Войти";
+    public string SubmitText => IsRegistration ? Texts.Get("Login.Register") : Texts.Get("Login.SignIn");
 
     public event Action<UserAccount>? SignedIn;
 
@@ -39,7 +39,7 @@ public partial class LoginViewModel(AuthenticationService authentication) : Page
         ErrorMessage = null;
         if (IsRegistration && Password != PasswordConfirmation)
         {
-            ErrorMessage = "Пароли не совпадают.";
+            ErrorMessage = Texts.Get("Errors.PasswordConfirmation");
             return;
         }
         IsBusy = true;
@@ -64,7 +64,7 @@ public partial class LoginViewModel(AuthenticationService authentication) : Page
         catch (Exception ex)
         {
             ErrorMessage = ex is SqliteException or DbUpdateException
-                ? "Не удалось открыть аккаунт. Проверьте доступ к базе данных."
+                ? Texts.Get("Errors.AccountOpen")
                 : ex.Message;
         }
         finally

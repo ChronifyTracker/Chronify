@@ -10,7 +10,7 @@ public static class PasswordHasher
     {
         if (string.IsNullOrWhiteSpace(password) || password.Length is < 8 or > 128)
         {
-            throw new ArgumentException("Пароль має містити від 8 до 128 символів.");
+            throw new ArgumentException(Texts.Get("Errors.PasswordLength"));
         }
 
         byte[] salt = RandomNumberGenerator.GetBytes(16);

@@ -23,12 +23,12 @@ public class WorkSession
     {
         if (minutes < 1 || minutes > 1440)
         {
-            throw new ArgumentException("Тривалість сесії: від 1 до 1440 хвилин.");
+            throw new ArgumentException(Texts.Get("Errors.SessionMinutes"));
         }
 
         if (startedAt > DateTime.Now)
         {
-            throw new ArgumentException("Не можна записати роботу в майбутньому.");
+            throw new ArgumentException(Texts.Get("Errors.FutureWork"));
         }
 
         UserId = userId;

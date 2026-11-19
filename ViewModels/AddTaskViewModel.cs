@@ -5,16 +5,25 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace Chronify.ViewModels;
 
-public partial class AddTaskViewModel : ObservableObject
+public partial class AddTaskViewModel : LocalizedObservableObject
 {
     private const string DefaultCategoryColor = "#F34F78";
 
-    private static readonly CategoryOption NoCategory = new("Без категории");
-    private static readonly CategoryOption NewCategory = new("+ Добавить категорию", isAddNew: true);
+    private static readonly CategoryOption NoCategory = new("", translationKey: "Categories.None");
+    private static readonly CategoryOption NewCategory = new("", isAddNew: true, translationKey: "Categories.AddOption");
 
     private readonly ITaskRepository _repository;
     private readonly ICategoryRepository _categoryRepository;
     private readonly TaskItem? _task;
+
+    public IReadOnlyList<LocalizedOption> Priorities { get; } =
+    [
+        new("Priority.Deferred"),
+        new("Priority.Low"),
+        new("Priority.Medium"),
+        new("Priority.High"),
+        new("Priority.Critical")
+    ];
 
     [ObservableProperty]
     public partial string? Title { get; set; }
@@ -51,9 +60,15 @@ public partial class AddTaskViewModel : ObservableObject
     public bool CategoriesLoaded { get; }
     public bool IsAddingCategory => SelectedCategory == NewCategory;
 
-    public string Heading => _task is null ? "Новая задача" : "Изменить задачу";
+    public string Heading => _task is null ? Texts.Get("Tasks.NewHeading") : Texts.Get("Tasks.EditHeading");
 
-    public string SaveText => _task is null ? "Добавить" : "Сохранить";
+    public string SaveText => _task is null ? Texts.Get("Common.Add") : Texts.Get("Common.Save");
+
+    public override void RefreshLanguage()
+    {
+        ErrorMessage = null;
+        base.RefreshLanguage();
+    }
 
     public AddTaskViewModel(
         ITaskRepository repository,
@@ -98,32 +113,32 @@ public partial class AddTaskViewModel : ObservableObject
     {
         if (string.IsNullOrWhiteSpace(Title))
         {
-            ErrorMessage = "Введите название.";
+            ErrorMessage = Texts.Get("Errors.TitleRequired");
             return false;
         }
 
         if (Minutes is null || Minutes != decimal.Truncate(Minutes.Value))
         {
-            ErrorMessage = "Укажите целое число минут.";
+            ErrorMessage = Texts.Get("Errors.IntegerMinutes");
             return false;
         }
 
         if (Minutes < TaskItem.MinEstimatedMinutes || Minutes > TaskItem.MaxEstimatedMinutes)
         {
-            ErrorMessage = $"Время на задачу — от {TaskItem.MinEstimatedMinutes} до {TaskItem.MaxEstimatedMinutes} мин.";
+            ErrorMessage = Texts.Format("Errors.TaskMinutesRange", TaskItem.MinEstimatedMinutes, TaskItem.MaxEstimatedMinutes);
             return false;
         }
 
         if (!string.IsNullOrWhiteSpace(DateText) &&
             (!DateTime.TryParse(
             DateText,
-            CultureInfo.CurrentCulture,
+            LocalizationService.Current.Culture,
             DateTimeStyles.None,
             out var parsed
         )
                 || DueDate is null || parsed.Date != DueDate.Value.Date))
         {
-            ErrorMessage = "Проверьте дату.";
+            ErrorMessage = Texts.Get("Errors.Date");
             return false;
         }
 
@@ -158,7 +173,7 @@ public partial class AddTaskViewModel : ObservableObject
             }
             else if (!_repository.Update(task))
             {
-                ErrorMessage = "Задача уже удалена.";
+                ErrorMessage = Texts.Get("Errors.TaskDeleted");
                 return false;
             }
 
@@ -168,19 +183,19 @@ public partial class AddTaskViewModel : ObservableObject
         {
             ErrorMessage = ex.Error switch
             {
-                ModelError.TaskTitleRequired => "Введите название.",
-                ModelError.TaskCompleted => "Завершённую задачу нельзя изменить.",
-                ModelError.DueDateInPast => "Дедлайн не может быть в прошлом.",
-                ModelError.TaskPriorityInvalid => "Выберите приоритет задачи.",
+                ModelError.TaskTitleRequired => Texts.Get("Errors.TitleRequired"),
+                ModelError.TaskCompleted => Texts.Get("Errors.TaskCompleted"),
+                ModelError.DueDateInPast => Texts.Get("Errors.PastDueDate"),
+                ModelError.TaskPriorityInvalid => Texts.Get("Errors.PriorityRequired"),
                 ModelError.EstimatedMinutesOutOfRange =>
-                    $"Время на задачу — от {TaskItem.MinEstimatedMinutes} до {TaskItem.MaxEstimatedMinutes} мин.",
-                _ => "Проверьте данные задачи."
+                    Texts.Format("Errors.TaskMinutesRange", TaskItem.MinEstimatedMinutes, TaskItem.MaxEstimatedMinutes),
+                _ => Texts.Get("Errors.TaskInput")
             };
             return false;
         }
         catch (Exception)
         {
-            ErrorMessage = "Не удалось сохранить задачу.";
+            ErrorMessage = Texts.Get("Errors.TaskSave");
             return false;
         }
     }
@@ -211,13 +226,13 @@ public partial class AddTaskViewModel : ObservableObject
         catch (ModelValidationException ex)
         {
             ErrorMessage = ex.Error == ModelError.CategoryNameTaken
-                ? "Такая категория уже есть."
-                : "Введите название категории.";
+                ? Texts.Get("Errors.CategoryExistsShort")
+                : Texts.Get("Errors.CategoryName");
             return false;
         }
         catch (Exception)
         {
-            ErrorMessage = "Не удалось сохранить категорию.";
+            ErrorMessage = Texts.Get("Errors.CategorySave");
             return false;
         }
     }

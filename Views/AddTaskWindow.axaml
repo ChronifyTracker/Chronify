@@ -1,5 +1,5 @@
 <Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="using:Chronify.Localization" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:Chronify.ViewModels"
         x:Class="Chronify.Views.AddTaskWindow"
         x:DataType="vm:AddTaskViewModel"
@@ -10,16 +10,16 @@
             <StackPanel Spacing="18">
                 <TextBlock Text="{Binding Heading}" FontSize="26" FontWeight="SemiBold" Margin="0,0,0,6" />
                 <StackPanel Spacing="7">
-                    <TextBlock Text="Название" Classes="muted" />
-                    <TextBox x:Name="TitleInput" Text="{Binding Title}" Watermark="Что нужно сделать?" MaxLength="200" />
+                    <TextBlock Text="{loc:Translate Common.Title}" Classes="muted" />
+                    <TextBox x:Name="TitleInput" Text="{Binding Title}" Watermark="{loc:Translate Tasks.TitlePlaceholder}" MaxLength="200" />
                 </StackPanel>
                 <StackPanel Spacing="7">
-                    <TextBlock Text="Описание" Classes="muted" />
-                    <TextBox Text="{Binding Description}" Watermark="Необязательно" AcceptsReturn="True"
+                    <TextBlock Text="{loc:Translate Tasks.Description}" Classes="muted" />
+                    <TextBox Text="{Binding Description}" Watermark="{loc:Translate Common.Optional}" AcceptsReturn="True"
                              TextWrapping="Wrap" Height="90" />
                 </StackPanel>
                 <StackPanel Spacing="7">
-                    <TextBlock Text="Категория" Classes="muted" />
+                    <TextBlock Text="{loc:Translate Tasks.Category}" Classes="muted" />
                     <ComboBox ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}"
                               HorizontalAlignment="Stretch" IsEnabled="{Binding CategoriesLoaded}">
                         <ComboBox.ItemTemplate>
@@ -28,41 +28,35 @@
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
-                    <TextBlock Text="Не удалось загрузить категории." Foreground="#FF8DA9"
+                    <TextBlock Text="{loc:Translate Errors.CategoriesLoad}" Foreground="#FF8DA9"
                                IsVisible="{Binding !CategoriesLoaded}" />
                     <TextBox x:Name="NewCategoryInput" Text="{Binding NewCategoryName}"
-                             Watermark="Название новой категории" MaxLength="50"
+                             Watermark="{loc:Translate Categories.NewName}" MaxLength="50"
                              IsVisible="{Binding IsAddingCategory}" />
                 </StackPanel>
                 <Grid ColumnDefinitions="*,16,*">
                     <StackPanel Spacing="7">
-                        <TextBlock Text="Приоритет" Classes="muted" />
-                        <ComboBox SelectedIndex="{Binding PriorityIndex}" HorizontalAlignment="Stretch">
-                            <ComboBoxItem Content="Отложено" />
-                            <ComboBoxItem Content="Низкий" />
-                            <ComboBoxItem Content="Средний" />
-                            <ComboBoxItem Content="Высокий" />
-                            <ComboBoxItem Content="Критический" />
-                        </ComboBox>
+                        <TextBlock Text="{loc:Translate Tasks.Priority}" Classes="muted" />
+                        <ComboBox ItemsSource="{Binding Priorities}" SelectedIndex="{Binding PriorityIndex}" HorizontalAlignment="Stretch" />
                     </StackPanel>
                     <StackPanel Grid.Column="2" Spacing="7">
-                        <TextBlock Text="Сколько займёт, мин" Classes="muted" />
+                        <TextBlock Text="{loc:Translate Tasks.EstimatedMinutes}" Classes="muted" />
                         <NumericUpDown x:Name="MinutesInput" Value="{Binding Minutes}"
                                        Increment="15" FormatString="0" />
                     </StackPanel>
                 </Grid>
                 <Grid ColumnDefinitions="*,16,*">
                     <StackPanel Spacing="7">
-                        <TextBlock Text="Дата" Classes="muted" />
+                        <TextBlock Text="{loc:Translate Common.Date}" Classes="muted" />
                         <CalendarDatePicker SelectedDate="{Binding DueDate}"
                                             Text="{Binding DateText, Mode=OneWayToSource}"
-                                            Watermark="Без срока" SelectedDateFormat="Short"
+                                            Watermark="{loc:Translate Tasks.NoDueDate}"
                                             HorizontalAlignment="Stretch" />
                     </StackPanel>
                     <StackPanel Grid.Column="2" Spacing="7">
-                        <TextBlock Text="Время" Classes="muted" />
+                        <TextBlock Text="{loc:Translate Common.Time}" Classes="muted" />
                         <TimePicker SelectedTime="{Binding DueTime}" ClockIdentifier="24HourClock"
-                                    HorizontalAlignment="Stretch" ToolTip.Tip="Учитывается, если выбрана дата" />
+                                    HorizontalAlignment="Stretch" ToolTip.Tip="{loc:Translate Tasks.TimeHint}" />
                     </StackPanel>
                 </Grid>
             </StackPanel>
@@ -71,7 +65,7 @@
             <TextBlock Text="{Binding ErrorMessage}" Foreground="#FF8DA9" TextWrapping="Wrap"
                        VerticalAlignment="Center" Margin="0,0,16,0" />
             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12">
-                <Button Content="Отмена" Click="Cancel" />
+                <Button Content="{loc:Translate Common.Cancel}" Click="Cancel" />
                 <Button Content="{Binding SaveText}" Classes="primary" Click="Save" />
             </StackPanel>
         </Grid>

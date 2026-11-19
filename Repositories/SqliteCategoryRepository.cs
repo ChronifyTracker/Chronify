@@ -18,7 +18,7 @@ public class SqliteCategoryRepository : ICategoryRepository
         using var context = _createContext();
         if (category.UserId is not null && category.UserId != _userId)
         {
-            throw new InvalidOperationException("Немає доступу до категорії.");
+            throw new InvalidOperationException(Texts.Get("Errors.CategoryAccess"));
         }
 
         category.UserId = _userId;
@@ -54,7 +54,7 @@ public class SqliteCategoryRepository : ICategoryRepository
             && t.CategoryId == category.Id
             && t.GroupAssignmentId != null))
         {
-            throw new InvalidOperationException("Название категории групповых задач задаётся названием группы.");
+            throw new InvalidOperationException(Texts.Get("Errors.GroupCategoryName"));
         }
 
         category.UserId = _userId;
@@ -75,7 +75,7 @@ public class SqliteCategoryRepository : ICategoryRepository
 
         if (context.Tasks.Any(t => t.UserId == _userId && t.CategoryId == categoryId && t.GroupAssignmentId != null))
         {
-            throw new InvalidOperationException("Категория используется групповыми задачами и не может быть удалена.");
+            throw new InvalidOperationException(Texts.Get("Errors.GroupCategoryDelete"));
         }
 
         context.Categories.Remove(category);

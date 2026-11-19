@@ -12,7 +12,7 @@ public class NotionProvider(Guid userId, Func<AppDbContext>? createContext = nul
     {
         if (string.IsNullOrWhiteSpace(token))
         {
-            throw new ArgumentException("Введите токен Notion с доступом к таблице Tasks.");
+            throw new ArgumentException(Texts.Get("Errors.NotionToken"));
         }
 
         await ExternalHttp.Json(
@@ -50,7 +50,7 @@ public class NotionProvider(Guid userId, Func<AppDbContext>? createContext = nul
             {
                 results.Add(new(
                     ExternalHttp.Text(item, "id"),
-                    item.TryGetProperty("title", out var title) ? ExternalHttp.RichText(title) : "Без названия"
+                    item.TryGetProperty("title", out var title) ? ExternalHttp.RichText(title) : Texts.Get("Import.Untitled")
                 ));
             }
 
@@ -120,7 +120,7 @@ public class NotionProvider(Guid userId, Func<AppDbContext>? createContext = nul
         return new(
             "Notion",
             ExternalHttp.Text(page, "id"),
-            title.Length > 0 ? title : "Без названия",
+            title.Length > 0 ? title : Texts.Get("Import.Untitled"),
             "",
             due,
             source.Name,
@@ -151,7 +151,7 @@ public class NotionProvider(Guid userId, Func<AppDbContext>? createContext = nul
     {
         if (depth > 20)
         {
-            throw new InvalidOperationException("Страница Notion имеет слишком большую вложенность. Импорт отменён.");
+            throw new InvalidOperationException(Texts.Get("Errors.NotionDepth"));
         }
 
         var lines = new List<string>();
@@ -202,10 +202,10 @@ public class NotionProvider(Guid userId, Func<AppDbContext>? createContext = nul
                             attachments.Add(await DownloadFile(name, url, cancellation));
                             if (attachments.Sum(a => (long)a.Content.Length) > 50 * 1024 * 1024)
                             {
-                                throw new InvalidOperationException("Вложения одной задачи превышают 50 МБ. Импорт отменён.");
+                                throw new InvalidOperationException(Texts.Get("Errors.TaskAttachmentsSize"));
                             }
 
-                            lines.Add("Локальное вложение: " + name);
+                            lines.Add(Texts.Get("Import.LocalAttachment") + name);
                         }
                     }
                     if (type is "bookmark" or "link_preview" or "embed")
@@ -237,7 +237,7 @@ public class NotionProvider(Guid userId, Func<AppDbContext>? createContext = nul
         const int limit = 20 * 1024 * 1024;
         if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || uri.Scheme != "https")
         {
-            throw new InvalidOperationException("Вложение Notion не имеет доступного HTTPS-адреса. Импорт отменён.");
+            throw new InvalidOperationException(Texts.Get("Errors.AttachmentUrl"));
         }
 
         using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(40) };
@@ -245,7 +245,7 @@ public class NotionProvider(Guid userId, Func<AppDbContext>? createContext = nul
         response.EnsureSuccessStatusCode();
         if (response.Content.Headers.ContentLength > limit)
         {
-            throw new InvalidOperationException("Размер вложения превышает 20 МБ. Импорт отменён.");
+            throw new InvalidOperationException(Texts.Get("Errors.AttachmentSize"));
         }
 
         await using var stream = await response.Content.ReadAsStreamAsync(cancellation);
@@ -256,7 +256,7 @@ public class NotionProvider(Guid userId, Func<AppDbContext>? createContext = nul
         {
             if (saved.Length + count > limit)
             {
-                throw new InvalidOperationException("Размер вложения превышает 20 МБ. Импорт отменён.");
+                throw new InvalidOperationException(Texts.Get("Errors.AttachmentSize"));
             }
 
             saved.Write(buffer, 0, count);

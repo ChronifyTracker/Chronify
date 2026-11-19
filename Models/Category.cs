@@ -36,7 +36,7 @@ namespace Chronify
 
             if (!System.Text.RegularExpressions.Regex.IsMatch(color.Trim(), "^#[0-9a-fA-F]{6}$"))
             {
-                throw new ArgumentException("Колір потрібно записати у форматі #RRGGBB.");
+                throw new ArgumentException(Texts.Get("Errors.CategoryColorFormat"));
             }
 
             Color = color.Trim();

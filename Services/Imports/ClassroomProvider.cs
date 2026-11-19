@@ -24,7 +24,7 @@ public class ClassroomProvider(Guid userId, Func<AppDbContext>? createContext = 
     {
         if (string.IsNullOrWhiteSpace(clientId) || string.IsNullOrWhiteSpace(clientSecret))
         {
-            throw new ArgumentException("Укажите Client ID и Client secret OAuth-приложения Google типа Desktop app.");
+            throw new ArgumentException(Texts.Get("Errors.GoogleCredentials"));
         }
 
         var flow = new PkceGoogleAuthorizationCodeFlow(new GoogleAuthorizationCodeFlow.Initializer

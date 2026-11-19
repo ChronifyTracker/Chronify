@@ -5,12 +5,12 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace Chronify.ViewModels;
 
-public partial class ImportRow(ExternalTask task) : ObservableObject
+public partial class ImportRow(ExternalTask task) : LocalizedObservableObject
 {
     public ExternalTask Task { get; } = task;
     public string Title => Task.Title;
 
-    public string Deadline => Task.DueDate?.ToString("dd.MM.yyyy HH:mm") ?? "Без срока";
+    public string Deadline => Task.DueDate is DateTime dueDate ? Texts.DateTime(dueDate) : Texts.Get("Tasks.NoDueDate");
 
     [ObservableProperty]
     public partial bool IsSelected { get; set; }
@@ -48,7 +48,7 @@ public partial class ImportViewModel(Guid userId, Func<AppDbContext>? createCont
                 Sources.Add(source);
             }
             SelectedSource = Sources.FirstOrDefault();
-            Message = Sources.Count == 0 ? "Доступных источников нет. Для Notion откройте подключению доступ к таблице Tasks." : "Выберите курс или таблицу и загрузите задачи.";
+            Message = Sources.Count == 0 ? Texts.Get("Import.NoSources") : Texts.Get("Import.SelectSourceHint");
         });
     }
 
@@ -59,7 +59,7 @@ public partial class ImportViewModel(Guid userId, Func<AppDbContext>? createCont
         {
             if (_provider is null || !AllSources && SelectedSource is null)
             {
-                throw new ArgumentException("Выберите источник.");
+                throw new ArgumentException(Texts.Get("Errors.SelectSource"));
             }
             using var cancellation = _cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(3));
             var loaded = new List<ExternalTask>();
@@ -72,7 +72,7 @@ public partial class ImportViewModel(Guid userId, Func<AppDbContext>? createCont
             {
                 Tasks.Add(new ImportRow(task));
             }
-            Message = $"Найдено задач: {Tasks.Count}. Отметьте нужные или импортируйте все.";
+            Message = Texts.Format("Import.Found", Tasks.Count);
         });
     }
 
@@ -110,12 +110,12 @@ public partial class ImportViewModel(Guid userId, Func<AppDbContext>? createCont
         {
             if (_provider is null)
             {
-                throw new ArgumentException("Сначала загрузите задачи.");
+                throw new ArgumentException(Texts.Get("Errors.LoadTasksFirst"));
             }
             var selected = Tasks.Where(t => all || t.IsSelected).Select(t => t.Task).ToList();
             if (selected.Count == 0)
             {
-                throw new ArgumentException("Не выбрано ни одной задачи.");
+                throw new ArgumentException(Texts.Get("Errors.NoSelectedTasks"));
             }
             using var cancellation = _cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(5));
             int count = await new TaskImportService(userId, createContext).Import(
@@ -127,7 +127,7 @@ public partial class ImportViewModel(Guid userId, Func<AppDbContext>? createCont
             {
                 row.IsSelected = false;
             }
-            Message = $"Добавлено: {count}. Уже импортированные задачи пропущены. Описания сохранены локально.";
+            Message = Texts.Format("Import.Result", count);
             DataChanged?.Invoke();
         });
     }

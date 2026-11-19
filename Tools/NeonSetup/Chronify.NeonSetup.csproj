@@ -11,5 +11,13 @@
     <Compile Include="../../Services/NeonGateway.cs" Link="NeonGateway.cs" />
     <Compile Include="../../Shared/TeamContracts.cs" Link="TeamContracts.cs" />
     <EmbeddedResource Include="../../Data/Neon/schema.sql" Link="schema.sql" />
+    <Using Include="Chronify.Localization" />
+    <Compile Include="../../Localization/ILocalizable.cs" Link="Localization/ILocalizable.cs" />
+    <Compile Include="../../Localization/LocalizationService.cs" Link="Localization/LocalizationService.cs" />
+    <Compile Include="../../Localization/Texts.cs" Link="Localization/Texts.cs" />
+    <Compile Include="../../Localization/ServerErrors.cs" Link="Localization/ServerErrors.cs" />
+    <Compile Include="../../Localization/RussianTexts.cs" Link="Localization/RussianTexts.cs" />
+    <Compile Include="../../Localization/UkrainianTexts.cs" Link="Localization/UkrainianTexts.cs" />
+    <Compile Include="../../Localization/EnglishTexts.cs" Link="Localization/EnglishTexts.cs" />
   </ItemGroup>
 </Project>

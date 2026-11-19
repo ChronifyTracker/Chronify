@@ -16,10 +16,10 @@ public class ConnectionStore(Guid userId, Func<AppDbContext>? createContext = nu
     {
         if (!OperatingSystem.IsWindows())
         {
-            throw new PlatformNotSupportedException("Хранение подключений пока поддерживается в Windows.");
+            throw new PlatformNotSupportedException(Texts.Get("Errors.ConnectionWindows"));
         }
 
-        var connection = Find(provider) ?? throw new InvalidOperationException("Сначала подключите сервис в личном кабинете.");
+        var connection = Find(provider) ?? throw new InvalidOperationException(Texts.Get("Errors.ConnectFirst"));
         return Encoding.UTF8.GetString(ProtectedData.Unprotect(
             Convert.FromBase64String(connection.ProtectedSecret),
             Entropy(),
@@ -63,7 +63,7 @@ public class ConnectionStore(Guid userId, Func<AppDbContext>? createContext = nu
     {
         if (!OperatingSystem.IsWindows())
         {
-            throw new PlatformNotSupportedException("Хранение подключений пока поддерживается в Windows.");
+            throw new PlatformNotSupportedException(Texts.Get("Errors.ConnectionWindows"));
         }
 
         return new ServiceConnection

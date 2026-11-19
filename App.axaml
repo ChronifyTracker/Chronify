@@ -1,8 +1,14 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mi="using:Material.Icons.Avalonia"
+             xmlns:loc="using:Chronify.Localization"
              x:Class="Chronify.App"
              RequestedThemeVariant="Dark">
+    <Application.DataTemplates>
+        <DataTemplate DataType="loc:LocalizedOption" x:DataType="loc:LocalizedOption">
+            <TextBlock Text="{Binding Label}" />
+        </DataTemplate>
+    </Application.DataTemplates>
     <Application.Resources>
         <SolidColorBrush x:Key="AccentBrush">#F34F78</SolidColorBrush>
         <SolidColorBrush x:Key="MutedBrush">#A29AA4</SolidColorBrush>
@@ -21,6 +27,12 @@
         </FluentTheme>
         <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
         <mi:MaterialIconStyles />
+        <!-- Відкриті поля дати теж змінюють формат після перемикання мови. -->
+        <Style Selector="CalendarDatePicker">
+            <Setter Property="SelectedDateFormat" Value="Custom" />
+            <Setter Property="CustomDateFormatString" Value="{ReflectionBinding Culture.DateTimeFormat.ShortDatePattern, Source={x:Static loc:LocalizationService.Current}}" />
+            <Setter Property="FirstDayOfWeek" Value="{ReflectionBinding Culture.DateTimeFormat.FirstDayOfWeek, Source={x:Static loc:LocalizationService.Current}}" />
+        </Style>
         <Style Selector="Window">
             <Setter Property="Icon" Value="/Assets/chronify.ico" />
             <Setter Property="Background" Value="#111014" />

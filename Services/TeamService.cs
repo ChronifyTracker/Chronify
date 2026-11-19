@@ -73,7 +73,7 @@ public class TeamService(UserAccount user, Func<AppDbContext>? createContext = n
 
         try
         {
-            var connection = Connection ?? throw new InvalidOperationException("Для работы с группами войдите в Chronify при наличии интернета.");
+            var connection = Connection ?? throw new InvalidOperationException(Texts.Get("Groups.ConnectionNotice"));
             using (var db = _createContext())
             {
                 foreach (var item in db.CachedAssignments.Where(a => a.UserId == user.Id && a.PendingCompletion)
@@ -100,7 +100,7 @@ public class TeamService(UserAccount user, Func<AppDbContext>? createContext = n
                 .ToList();
             if (pending.Any(p => !details.Any(d => d.Tasks.Any(t => t.Id == p.Id))))
             {
-                throw new InvalidOperationException("Есть неотправленные завершения недоступных задач. Локальная копия сохранена.");
+                throw new InvalidOperationException(Texts.Get("Errors.PendingUnavailableTasks"));
             }
 
             context.CachedGroups.Where(g => g.UserId == user.Id).ExecuteDelete();
@@ -221,10 +221,10 @@ public class TeamService(UserAccount user, Func<AppDbContext>? createContext = n
         object? data = null
     )
     {
-        var connection = Connection ?? throw new InvalidOperationException("Для работы с группами войдите в Chronify при наличии интернета.");
+        var connection = Connection ?? throw new InvalidOperationException(Texts.Get("Groups.ConnectionNotice"));
         if (connection.Address != NeonConfiguration.Workspace)
         {
-            throw new InvalidOperationException("Конфигурация Neon изменилась. Подключитесь к своему пространству.");
+            throw new InvalidOperationException(Texts.Get("Errors.WorkspaceChanged"));
         }
 
         string[] parts = path.Split('/');
@@ -260,7 +260,7 @@ public class TeamService(UserAccount user, Func<AppDbContext>? createContext = n
         }
         else
         {
-            throw new InvalidOperationException("Неизвестное действие группы.");
+            throw new InvalidOperationException(Texts.Get("Errors.UnknownGroupAction"));
         }
 
         return NeonGateway.Request<T>(action, payload, _connections.Secret("ChronifyNeon"));

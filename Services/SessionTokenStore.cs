@@ -39,7 +39,7 @@ public class SessionTokenStore(string path) : ISessionTokenStore
     {
         if (!OperatingSystem.IsWindows())
         {
-            throw new PlatformNotSupportedException("Збереження входу доступне у Windows.");
+            throw new PlatformNotSupportedException(Texts.Get("Errors.RememberWindows"));
         }
 
         byte[] data = ProtectedData.Protect(Encoding.UTF8.GetBytes(token), null, DataProtectionScope.CurrentUser);

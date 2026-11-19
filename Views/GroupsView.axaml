@@ -1,68 +1,68 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:Chronify.ViewModels" x:Class="Chronify.Views.GroupsView" x:DataType="vm:GroupsViewModel">
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:loc="using:Chronify.Localization" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:Chronify.ViewModels" x:Class="Chronify.Views.GroupsView" x:DataType="vm:GroupsViewModel">
     <ScrollViewer HorizontalScrollBarVisibility="Disabled">
         <StackPanel Spacing="16" Margin="0,0,12,20">
             <TextBlock Text="{Binding ErrorMessage}" Foreground="#FF8DA9" TextWrapping="Wrap" />
             <TextBlock Text="{Binding Message}" Foreground="#81C784" TextWrapping="Wrap" />
-            <TextBlock Text="Операция выполняется…" IsVisible="{Binding IsBusy}" Classes="muted" />
+            <TextBlock Text="{loc:Translate Common.Working}" IsVisible="{Binding IsBusy}" Classes="muted" />
             <StackPanel Spacing="16" IsEnabled="{Binding !IsBusy}">
-                <TextBlock Text="Группы работают онлайн. Полученные задачи сохраняются на компьютере." TextWrapping="Wrap" Classes="muted" />
+                <TextBlock Text="{loc:Translate Groups.OfflineHint}" TextWrapping="Wrap" Classes="muted" />
                 <TextBlock Text="{Binding ConnectionNotice}" TextWrapping="Wrap" Foreground="#F2B45A" />
-                <Button Content="Обновить группы" Command="{Binding SynchronizeCommand}" IsEnabled="{Binding IsConnected}" />
+                <Button Content="{loc:Translate Groups.Refresh}" Command="{Binding SynchronizeCommand}" IsEnabled="{Binding IsConnected}" />
                 <Border Classes="panel" Padding="20" IsEnabled="{Binding IsConnected}">
                     <StackPanel Spacing="10">
                         <Grid ColumnDefinitions="*,12,Auto">
-                            <TextBox Text="{Binding GroupName}" Watermark="Название новой группы" MaxLength="80" />
-                            <Button Grid.Column="2" Content="Создать группу" Command="{Binding CreateGroupCommand}" />
+                            <TextBox Text="{Binding GroupName}" Watermark="{loc:Translate Groups.NewName}" MaxLength="80" />
+                            <Button Grid.Column="2" Content="{loc:Translate Groups.Create}" Command="{Binding CreateGroupCommand}" />
                         </Grid>
                         <Grid ColumnDefinitions="*,12,Auto">
-                            <TextBox Text="{Binding InviteCode}" Watermark="Код приглашения" MaxLength="32" />
-                            <Button Grid.Column="2" Content="Войти в группу" Command="{Binding JoinGroupCommand}" />
+                            <TextBox Text="{Binding InviteCode}" Watermark="{loc:Translate Groups.InviteCode}" MaxLength="32" />
+                            <Button Grid.Column="2" Content="{loc:Translate Groups.Join}" Command="{Binding JoinGroupCommand}" />
                         </Grid>
                     </StackPanel>
                 </Border>
-                <ComboBox ItemsSource="{Binding Groups}" SelectedItem="{Binding SelectedGroup}" PlaceholderText="Мои группы" HorizontalAlignment="Stretch" />
+                <ComboBox ItemsSource="{Binding Groups}" SelectedItem="{Binding SelectedGroup}" PlaceholderText="{loc:Translate Groups.MyGroups}" HorizontalAlignment="Stretch" />
                 <TextBlock Text="{Binding GroupDetails}" TextWrapping="Wrap" />
                 <Border Classes="panel" Padding="20" IsVisible="{Binding CanViewGroup}">
                     <StackPanel Spacing="12">
-                        <TextBlock Text="Участники" Classes="section" />
+                        <TextBlock Text="{loc:Translate Groups.Members}" Classes="section" />
                         <ComboBox ItemsSource="{Binding Members}" SelectedItem="{Binding SelectedMember}" HorizontalAlignment="Stretch" />
                         <StackPanel Orientation="Horizontal" Spacing="8" IsVisible="{Binding IsAdministrator}">
-                            <Button Content="Назначить тимлидом" Command="{Binding MakeTeamLeadCommand}" />
-                            <Button Content="Назначить исполнителем" Command="{Binding MakeExecutorCommand}" />
+                            <Button Content="{loc:Translate Groups.MakeTeamLead}" Command="{Binding MakeTeamLeadCommand}" />
+                            <Button Content="{loc:Translate Groups.MakeExecutor}" Command="{Binding MakeExecutorCommand}" />
                         </StackPanel>
                     </StackPanel>
                 </Border>
                 <Border Classes="panel" Padding="20" IsVisible="{Binding CanAssign}">
                     <StackPanel Spacing="12">
-                        <TextBlock Text="Назначить задачу" Classes="section" />
-                        <ComboBox ItemsSource="{Binding Assignees}" SelectedItem="{Binding Assignee}" PlaceholderText="Получатель задачи" HorizontalAlignment="Stretch" />
-                        <TextBox Text="{Binding TaskTitle}" Watermark="Название задачи" MaxLength="200" />
-                        <TextBox Text="{Binding TaskDescription}" Watermark="Условия задачи" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="100" MaxLength="50000" />
+                        <TextBlock Text="{loc:Translate Groups.AssignTask}" Classes="section" />
+                        <ComboBox ItemsSource="{Binding Assignees}" SelectedItem="{Binding Assignee}" PlaceholderText="{loc:Translate Groups.Assignee}" HorizontalAlignment="Stretch" />
+                        <TextBox Text="{Binding TaskTitle}" Watermark="{loc:Translate Tasks.TaskTitle}" MaxLength="200" />
+                        <TextBox Text="{Binding TaskDescription}" Watermark="{loc:Translate Tasks.Details}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="100" MaxLength="50000" />
                         <WrapPanel>
                             <StackPanel Spacing="6" Margin="0,0,16,0">
-                                <TextBlock Text="Дедлайн (до конца дня)" Classes="muted" />
-                                <CalendarDatePicker SelectedDate="{Binding DueDate}" Watermark="Без срока" />
+                                <TextBlock Text="{loc:Translate Groups.EndOfDay}" Classes="muted" />
+                                <CalendarDatePicker SelectedDate="{Binding DueDate}" Watermark="{loc:Translate Tasks.NoDueDate}" />
                             </StackPanel>
                             <StackPanel Spacing="6" Margin="0,0,16,0">
-                                <TextBlock Text="Оценка, минут" Classes="muted" />
+                                <TextBlock Text="{loc:Translate Tasks.EstimateMinutes}" Classes="muted" />
                                 <NumericUpDown Value="{Binding EstimatedMinutes}" Minimum="0" Maximum="100000" Increment="15" Width="150" />
                             </StackPanel>
                             <StackPanel Spacing="6">
-                                <TextBlock Text="Важность" Classes="muted" />
+                                <TextBlock Text="{loc:Translate Tasks.Importance}" Classes="muted" />
                                 <ComboBox ItemsSource="{Binding Priorities}" SelectedIndex="{Binding PriorityIndex}" />
                             </StackPanel>
                         </WrapPanel>
                         <ComboBox ItemsSource="{Binding InitialStatuses}" SelectedIndex="{Binding InitialStatusIndex}" HorizontalAlignment="Stretch" />
-                        <Button Content="Назначить задачу" Command="{Binding AssignTaskCommand}" Classes="primary" />
+                        <Button Content="{loc:Translate Groups.AssignTask}" Command="{Binding AssignTaskCommand}" Classes="primary" />
                     </StackPanel>
                 </Border>
                 <Border Classes="panel" Padding="20" IsVisible="{Binding CanViewGroup}">
                     <StackPanel Spacing="12">
-                        <TextBlock Text="Задания группы" Classes="section" />
-                        <TextBlock Text="Администратор и тимлид видят все задания. Исполнитель — только назначенные ему. Завершить начатое задание можно в разделе «Все задачи»." TextWrapping="Wrap" Classes="muted" />
+                        <TextBlock Text="{loc:Translate Groups.Assignments}" Classes="section" />
+                        <TextBlock Text="{loc:Translate Groups.VisibilityHint}" TextWrapping="Wrap" Classes="muted" />
                         <ListBox ItemsSource="{Binding Tasks}" SelectedItem="{Binding SelectedTask}" MaxHeight="260" />
                         <TextBlock Text="{Binding SelectedTaskDetails}" TextWrapping="Wrap" />
-                        <Button Content="Запустить выбранную задачу" Command="{Binding StartTaskCommand}" IsEnabled="{Binding CanStartSelected}" />
+                        <Button Content="{loc:Translate Groups.StartTask}" Command="{Binding StartTaskCommand}" IsEnabled="{Binding CanStartSelected}" />
                     </StackPanel>
                 </Border>
             </StackPanel>

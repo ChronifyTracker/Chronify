@@ -51,12 +51,12 @@ public static class NeonGateway
         }
         catch (PostgresException ex) when (ex.SqlState == "P0001")
         {
-            throw new InvalidOperationException(ex.MessageText);
+            throw new InvalidOperationException(ServerErrors.Translate(ex.MessageText), ex);
         }
         catch (PostgresException ex) when (ex.SqlState == "23505")
         {
             throw new InvalidOperationException(
-                                                                         "Такая запись уже существует.",
+                                                                         Texts.Get("Errors.RecordExists"),
                                                                          ex
                                                                      );
         }

@@ -81,7 +81,7 @@ public partial class CategoriesViewModel(ICategoryRepository repository) : PageV
             }
             else if (!repository.Update(new Category(Name, Color) { Id = SelectedCategory.Id }))
             {
-                throw new InvalidOperationException("Категория уже удалена.");
+                throw new InvalidOperationException(Texts.Get("Errors.CategoryDeleted"));
             }
         }))
         {
@@ -96,7 +96,7 @@ public partial class CategoriesViewModel(ICategoryRepository repository) : PageV
     {
         if (SelectedCategory is null)
         {
-            ErrorMessage = "Выберите категорию.";
+            ErrorMessage = Texts.Get("Errors.SelectCategory");
             return;
         }
         if (Run(() => repository.Delete(SelectedCategory.Id)))

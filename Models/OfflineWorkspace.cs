@@ -34,7 +34,7 @@ public class CachedMember
     public TeamRole Role { get; set; }
     public override string ToString()
     {
-        return $"{Name} ({Role switch { TeamRole.Administrator => "администратор", TeamRole.TeamLead => "тимлид", TeamRole.Executor => "исполнитель", _ => "без роли" }})";
+        return $"{Name} ({Texts.Role(Role)})";
     }
 }
 
@@ -56,6 +56,14 @@ public class CachedAssignment
     public bool PendingCompletion { get; set; }
     public override string ToString()
     {
-        return $"{Title} · {AssigneeName} · {(PendingCompletion ? "выполнена, ожидает отправки" : Status switch { 0 => "новая", 1 => "в работе", _ => "завершена" })}";
+        string status = PendingCompletion
+            ? Texts.Get("Status.PendingCompletion")
+            : Status switch
+            {
+                0 => Texts.Get("Status.NewLower"),
+                1 => Texts.Get("Status.InProgressLower"),
+                _ => Texts.Get("Status.CompletedLower")
+            };
+        return $"{Title} · {AssigneeName} · {status}";
     }
 }

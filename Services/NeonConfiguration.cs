@@ -81,7 +81,7 @@ public static class NeonConfiguration
         get
         {
             return ConnectionString(Read("CHRONIFY_DATABASE_URL")
-        ?? throw new InvalidOperationException("Подключение Neon ещё не настроено. Нужен CHRONIFY_DATABASE_URL в .env.local."));
+        ?? throw new InvalidOperationException(Texts.Get("Errors.NeonConfiguration")));
         }
     }
 

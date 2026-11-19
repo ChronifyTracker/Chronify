@@ -25,7 +25,7 @@ public class UserPreferencesRepository(Guid userId, Func<AppDbContext>? createCo
     {
         if (dailyLimit is < 1 or > 1440 || planLimit is < 1 or > 1440)
         {
-            throw new ArgumentException("Ліміти часу: від 1 до 1440 хвилин.");
+            throw new ArgumentException(Texts.Get("Errors.TimeLimits"));
         }
 
         using var context = _createContext();
@@ -37,6 +37,24 @@ public class UserPreferencesRepository(Guid userId, Func<AppDbContext>? createCo
         }
         preferences.DailyLimitMinutes = dailyLimit;
         preferences.PlanLimitMinutes = planLimit;
+        context.SaveChanges();
+    }
+
+    public void SaveLanguage(string code)
+    {
+        if (!LocalizationService.IsSupported(code))
+        {
+            throw new ArgumentException(Texts.Get("Errors.Language"));
+        }
+
+        using var context = _createContext();
+        var preferences = context.UserPreferences.Find(userId);
+        if (preferences is null)
+        {
+            preferences = new UserPreferences { UserId = userId };
+            context.UserPreferences.Add(preferences);
+        }
+        preferences.LanguageCode = code;
         context.SaveChanges();
     }
 }

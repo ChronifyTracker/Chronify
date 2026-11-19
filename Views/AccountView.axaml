@@ -1,19 +1,28 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:Chronify.ViewModels" xmlns:views="using:Chronify.Views" x:Class="Chronify.Views.AccountView" x:DataType="vm:AccountViewModel">
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:loc="using:Chronify.Localization" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:Chronify.ViewModels" xmlns:views="using:Chronify.Views" x:Class="Chronify.Views.AccountView" x:DataType="vm:AccountViewModel">
     <ScrollViewer HorizontalScrollBarVisibility="Disabled">
     <Border Classes="panel" Padding="24" MaxWidth="600" HorizontalAlignment="Left" VerticalAlignment="Top">
         <StackPanel Spacing="16">
-            <TextBlock Text="Аккаунт Chronify" Classes="section" />
-            <TextBlock Text="Электронная почта" Classes="muted" />
+            <TextBlock Text="{loc:Translate Account.Heading}" Classes="section" />
+            <TextBlock Text="{loc:Translate Account.Email}" Classes="muted" />
             <TextBlock Text="{Binding Email}" />
-            <TextBlock Text="Дата регистрации" Classes="muted" />
+            <TextBlock Text="{loc:Translate Account.CreatedAt}" Classes="muted" />
             <TextBlock Text="{Binding CreatedAt}" />
-            <TextBlock Text="Имя" />
+            <TextBlock Text="{loc:Translate Account.Name}" />
             <TextBox Text="{Binding DisplayName}" MaxLength="80" />
-            <Button Content="Сохранить имя" Classes="primary" Command="{Binding SaveProfileCommand}" />
+            <Button Content="{loc:Translate Account.SaveName}" Classes="primary" Command="{Binding SaveProfileCommand}" />
+            <TextBlock Text="{loc:Translate Account.Language}" />
+            <ComboBox x:Name="LanguageSelector" ItemsSource="{Binding Languages}" SelectedItem="{Binding SelectedLanguage}" HorizontalAlignment="Stretch">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:LanguageOption">
+                        <TextBlock Text="{Binding Name}" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <TextBlock Text="{loc:Translate Account.LanguageHint}" Classes="muted" TextWrapping="Wrap" />
             <TextBlock Text="{Binding Message}" Foreground="#81C784" />
             <TextBlock Text="{Binding ErrorMessage}" Foreground="#FF8DA9" TextWrapping="Wrap" />
-            <TextBlock Text="Задачи, категории, фильтры и настройки доступны только в этом аккаунте." Classes="muted" TextWrapping="Wrap" />
-            <Button Content="Выйти из аккаунта" Command="{Binding LogoutCommand}" />
+            <TextBlock Text="{loc:Translate Account.PrivacyHint}" Classes="muted" TextWrapping="Wrap" />
+            <Button Content="{loc:Translate Account.Logout}" Command="{Binding LogoutCommand}" />
             <Border Height="1" Background="#302A33" Margin="0,8" />
             <views:IntegrationsView DataContext="{Binding Integrations}" />
         </StackPanel>

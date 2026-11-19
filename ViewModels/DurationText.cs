@@ -14,13 +14,13 @@ public static class DurationText
 
         if (minutes < 10)
         {
-            return $"{minutes} мин";
+            return Texts.Format("Duration.Minutes", minutes);
         }
 
         var toFiveMinutes = RoundTo(minutes, 5);
         if (toFiveMinutes < MinutesInHour)
         {
-            return $"{toFiveMinutes} мин";
+            return Texts.Format("Duration.Minutes", toFiveMinutes);
         }
 
         var toHalfHour = RoundTo(minutes, 30);
@@ -29,17 +29,17 @@ public static class DurationText
             var wholeHours = toHalfHour / MinutesInHour;
             var hasHalf = toHalfHour % MinutesInHour != 0;
 
-            return hasHalf ? $"{wholeHours},5 ч" : $"{wholeHours} ч";
+            return hasHalf ? Texts.Format("Duration.HalfHours", wholeHours) : Texts.Format("Duration.Hours", wholeHours);
         }
 
         var toHour = RoundTo(minutes, MinutesInHour);
         if (toHour < 2 * MinutesInDay)
         {
-            return $"{toHour / MinutesInHour} ч";
+            return Texts.Format("Duration.Hours", toHour / MinutesInHour);
         }
 
         var toDay = RoundTo(minutes, MinutesInDay);
-        return $"{toDay / MinutesInDay} дн";
+        return Texts.Format("Duration.Days", toDay / MinutesInDay);
     }
 
     private static int RoundTo(int value, int step)

@@ -17,7 +17,7 @@ public class DayPlanningService
     {
         if (availableMinutes < 1 || availableMinutes > 1440)
         {
-            throw new ArgumentException("Ліміт плану: від 1 до 1440 хвилин.");
+            throw new ArgumentException(Texts.Get("Errors.PlanLimit"));
         }
 
         var active = tasks.Where(t => t.Status != TaskStatus.Completed).ToList();

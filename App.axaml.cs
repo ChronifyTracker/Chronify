@@ -40,7 +40,7 @@ public partial class App : Application
             }
             catch (Exception)
             {
-                ShowLogin("Не удалось открыть базу данных или сохранённую сессию. Проверьте доступ к файлам программы.");
+                ShowLogin(Texts.Get("Errors.Startup"));
             }
         }
         base.OnFrameworkInitializationCompleted();

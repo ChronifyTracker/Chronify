@@ -20,7 +20,7 @@ public class SqliteTaskRepository : ITaskRepository
         CheckCategory(context, task.CategoryId);
         if (task.UserId is not null && task.UserId != _userId)
         {
-            throw new InvalidOperationException("Немає доступу до цієї задачі.");
+            throw new InvalidOperationException(Texts.Get("Errors.TaskAccess"));
         }
 
         task.UserId = _userId;
@@ -70,7 +70,7 @@ public class SqliteTaskRepository : ITaskRepository
                 || stored.Title != task.Title || stored.Description != task.Description || stored.Priority != task.Priority
                 || stored.DueDate != task.DueDate || stored.CategoryId != task.CategoryId || stored.EstimatedMinutes != task.EstimatedMinutes)
             {
-                throw new InvalidOperationException("Условия групповой задачи задаёт постановщик. Исполнитель может завершить начатую задачу.");
+                throw new InvalidOperationException(Texts.Get("Errors.AssignedTaskEdit"));
             }
 
             var cached = context.CachedAssignments.Single(a => a.UserId == _userId && a.Id == assignmentId);
@@ -93,7 +93,7 @@ public class SqliteTaskRepository : ITaskRepository
 
         if (task.GroupAssignmentId is not null)
         {
-            throw new InvalidOperationException("Назначенную задачу нельзя удалить из личного списка.");
+            throw new InvalidOperationException(Texts.Get("Errors.AssignedTaskDelete"));
         }
 
         context.Tasks.Remove(task);
@@ -105,7 +105,7 @@ public class SqliteTaskRepository : ITaskRepository
     {
         if (categoryId is Guid id && !context.Categories.Any(c => c.Id == id && c.UserId == _userId))
         {
-            throw new InvalidOperationException("Категорія не належить поточному користувачу.");
+            throw new InvalidOperationException(Texts.Get("Errors.CategoryOwner"));
         }
     }
 }

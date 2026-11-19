@@ -18,7 +18,7 @@ public class WorkSessionRepository(Guid userId, Func<AppDbContext>? createContex
         using var context = _createContext();
         if (session.UserId != userId || !context.Tasks.Any(t => t.Id == session.TaskId && t.UserId == userId))
         {
-            throw new InvalidOperationException("Немає доступу до задачі.");
+            throw new InvalidOperationException(Texts.Get("Errors.WorkTaskAccess"));
         }
 
         context.WorkSessions.Add(session);

@@ -23,7 +23,9 @@ public partial class IntegrationsViewModel(Guid userId, Func<AppDbContext>? crea
     {
         get
         {
-            return $"Classroom: {(HasClassroom ? "подключён" : "не подключён")} · Notion: {(HasNotion ? "подключён" : "не подключён")}";
+            string classroom = Texts.Get(HasClassroom ? "Integrations.Connected" : "Integrations.Disconnected");
+            string notion = Texts.Get(HasNotion ? "Integrations.Connected" : "Integrations.Disconnected");
+            return $"Classroom: {classroom} · Notion: {notion}";
         }
     }
 
@@ -86,7 +88,7 @@ public partial class IntegrationsViewModel(Guid userId, Func<AppDbContext>? crea
         OnPropertyChanged(nameof(HasClassroom));
         OnPropertyChanged(nameof(HasNotion));
         OnPropertyChanged(nameof(Status));
-        Message = "Подключение изменено. Уже импортированные задачи сохранены.";
+        Message = Texts.Get("Integrations.Changed");
         ConnectionsChanged?.Invoke();
     }
 }

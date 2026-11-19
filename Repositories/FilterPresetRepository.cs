@@ -17,7 +17,7 @@ public class FilterPresetRepository(Guid userId, Func<AppDbContext>? createConte
         name = name.Trim();
         if (name.Length is < 1 or > 50)
         {
-            throw new ArgumentException("Назва фільтра: від 1 до 50 символів.");
+            throw new ArgumentException(Texts.Get("Errors.FilterName"));
         }
 
         using var context = _createContext();
@@ -26,7 +26,7 @@ public class FilterPresetRepository(Guid userId, Func<AppDbContext>? createConte
             && !context.Categories.Any(c => c.Id == categoryId
             && c.UserId == userId))
         {
-            throw new InvalidOperationException("Немає доступу до категорії фільтра.");
+            throw new InvalidOperationException(Texts.Get("Errors.FilterCategoryAccess"));
         }
 
         var presets = context.FilterPresets.Where(p => p.UserId == userId).ToList();
@@ -35,7 +35,7 @@ public class FilterPresetRepository(Guid userId, Func<AppDbContext>? createConte
         {
             if (presets.Count >= 5)
             {
-                throw new InvalidOperationException("Можна зберегти не більше 5 фільтрів.");
+                throw new InvalidOperationException(Texts.Get("Errors.FilterLimit"));
             }
 
             preset = new FilterPreset { UserId = userId, Name = name };

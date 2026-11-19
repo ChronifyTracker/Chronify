@@ -8,6 +8,16 @@ public partial class AccountViewModel : PageViewModel
 {
     private readonly UserAccount _user;
     private readonly AuthenticationService _authentication;
+    private readonly UserPreferencesRepository _preferences;
+    private bool _languageReady;
+    public IReadOnlyList<LanguageOption> Languages { get; } =
+    [
+        new("ru", "Русский"),
+        new("uk", "Українська"),
+        new("en", "English")
+    ];
+    [ObservableProperty]
+    public partial LanguageOption? SelectedLanguage { get; set; }
     public IntegrationsViewModel Integrations { get; }
     [ObservableProperty]
     public partial string DisplayName { get; set; }
@@ -15,7 +25,7 @@ public partial class AccountViewModel : PageViewModel
     public partial string? Message { get; set; }
     public string Email => _user.Email;
 
-    public string CreatedAt => _user.CreatedAt.ToString("dd.MM.yyyy");
+    public string CreatedAt => Texts.Date(_user.CreatedAt);
 
     public event Action? LogoutRequested;
 
@@ -27,8 +37,39 @@ public partial class AccountViewModel : PageViewModel
     {
         _user = user;
         _authentication = authentication;
+        _preferences = new UserPreferencesRepository(user.Id, createContext);
+        string languageCode = _preferences.Get().LanguageCode;
+        SelectedLanguage = Languages.FirstOrDefault(language => language.Code == languageCode) ?? Languages[0];
         Integrations = new IntegrationsViewModel(user.Id, createContext);
         DisplayName = user.DisplayName;
+        _languageReady = true;
+    }
+
+    partial void OnSelectedLanguageChanged(LanguageOption? value)
+    {
+        if (!_languageReady || value is null)
+        {
+            return;
+        }
+
+        // Спочатку зберігаємо вибір. За помилки БД поточна мова не змінюється.
+        string previousCode = LocalizationService.Current.LanguageCode;
+        if (Run(() => _preferences.SaveLanguage(value.Code)))
+        {
+            LocalizationService.Current.ChangeLanguage(value.Code);
+        }
+        else
+        {
+            _languageReady = false;
+            SelectedLanguage = Languages.First(language => language.Code == previousCode);
+            _languageReady = true;
+        }
+    }
+
+    public override void RefreshLanguage()
+    {
+        Message = null;
+        base.RefreshLanguage();
     }
 
     [RelayCommand]
@@ -36,7 +77,7 @@ public partial class AccountViewModel : PageViewModel
     {
         if (Run(() => _authentication.UpdateName(_user, DisplayName)))
         {
-            Message = "Имя сохранено.";
+            Message = Texts.Get("Account.NameSaved");
         }
     }
 
@@ -54,3 +95,5 @@ public partial class AccountViewModel : PageViewModel
         }
     }
 }
+
+public record LanguageOption(string Code, string Name);

@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-using System.Globalization;
 using Chronify.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -15,6 +14,7 @@ public partial class MainWindowViewModel : PageViewModel
     private bool _changingFilters;
     private readonly Guid _userId;
     private readonly Func<AppDbContext>? _createContext;
+    private readonly AuthenticationService _authentication;
     public GroupsViewModel GroupsPage { get; }
     public ImportViewModel ImportPage { get; }
     public bool HasClassroom => AccountPage.Integrations.HasClassroom;
@@ -26,7 +26,7 @@ public partial class MainWindowViewModel : PageViewModel
     public StatisticsViewModel StatisticsPage { get; }
     public WorkTimeViewModel WorkTimePage { get; }
     public AccountViewModel AccountPage { get; }
-    public string? SessionNotice { get; }
+    public string? SessionNotice => _authentication.SessionNotice;
     public event Action? LogoutRequested;
 
     [ObservableProperty]
@@ -74,71 +74,48 @@ public partial class MainWindowViewModel : PageViewModel
     {
         get
         {
-            return new[] { "Главная", "Все задачи", "Категории", "План и нагрузка", "Статистика", "Учёт времени", "Личный кабинет", "Группы", "Импорт задач" }[SelectedPage];
+            string[] keys =
+            [
+                "Navigation.Home", "Navigation.Tasks", "Navigation.Categories",
+                "Navigation.Planning", "Navigation.Statistics", "Navigation.WorkTime",
+                "Navigation.Account", "Navigation.Groups", "Navigation.Import"
+            ];
+            return Texts.Get(keys[SelectedPage]);
         }
     }
 
-    public IReadOnlyList<string> StatusFilters { get; } =
-
+    public IReadOnlyList<LocalizedOption> StatusFilters { get; } =
     [
-
-        "Все статусы",
-
-        "Новые",
-
-        "В работе",
-
-        "Завершённые"
-
+        new("Filters.AllStatuses"),
+        new("Filters.New"),
+        new("Status.InProgress"),
+        new("Filters.Completed")
     ];
-    public IReadOnlyList<string> PriorityFilters { get; } =
-
+    public IReadOnlyList<LocalizedOption> PriorityFilters { get; } =
     [
-
-        "Все приоритеты",
-
-        "Отложено",
-
-        "Низкий",
-
-        "Средний",
-
-        "Высокий",
-
-        "Критический"
-
+        new("Filters.AllPriorities"),
+        new("Priority.Deferred"),
+        new("Priority.Low"),
+        new("Priority.Medium"),
+        new("Priority.High"),
+        new("Priority.Critical")
     ];
-    public IReadOnlyList<string> DateFilters { get; } =
-
+    public IReadOnlyList<LocalizedOption> DateFilters { get; } =
     [
-
-        "Все сроки",
-
-        "Сегодня",
-
-        "Ближайшие 3 дня",
-
-        "Просроченные"
-
+        new("Filters.AllDates"),
+        new("Filters.Today"),
+        new("Filters.NextThreeDays"),
+        new("Filters.Overdue")
     ];
-    public IReadOnlyList<string> SortOptions { get; } =
-
+    public IReadOnlyList<LocalizedOption> SortOptions { get; } =
     [
-
-        "Ближайший срок (EDF)",
-
-        "Динамический приоритет",
-
-        "Важность",
-
-        "Сначала новые",
-
-        "Название",
-
-        "Категория",
-
-        "Срочность с учётом объёма"
-
+        new("Sort.Edf"),
+        new("Sort.DynamicPriority"),
+        new("Tasks.Importance"),
+        new("Sort.Newest"),
+        new("Common.Title"),
+        new("Tasks.Category"),
+        new("Sort.WeightedUrgency")
     ];
     public ObservableCollection<CategoryOption> FilterCategories { get; } = [];
     public ObservableCollection<FilterPreset> Presets { get; } = [];
@@ -163,6 +140,7 @@ public partial class MainWindowViewModel : PageViewModel
         _categories = categories;
         _sessions = sessions;
         _presets = presets;
+        _authentication = authentication;
         CategoriesPage = new CategoriesViewModel(categories);
         PlanningPage = new PlanningViewModel(tasks, preferences);
         StatisticsPage = new StatisticsViewModel(tasks, sessions);
@@ -177,11 +155,25 @@ public partial class MainWindowViewModel : PageViewModel
             OnPropertyChanged(nameof(HasClassroom));
             OnPropertyChanged(nameof(HasNotion));
         };
-        SessionNotice = authentication.SessionNotice;
         CategoriesPage.DataChanged += Refresh;
         WorkTimePage.DataChanged += Refresh;
         AccountPage.LogoutRequested += () => LogoutRequested?.Invoke();
+        string code = preferences.Get().LanguageCode;
+        LocalizationService.Current.ChangeLanguage(LocalizationService.IsSupported(code) ? code : "ru");
         Refresh();
+    }
+
+    public override void RefreshLanguage()
+    {
+        base.RefreshLanguage();
+        DateText = DateTime.Now.ToString("dddd, d MMMM", LocalizationService.Current.Culture);
+        Run(() =>
+        {
+            var overview = new TaskOverviewService(_tasks).GetOverview(DateTime.Now);
+            Fill(UrgentTasks, overview.Urgent);
+            Fill(NewTasks, overview.New);
+            Fill(AllTasks, _tasks.GetAll(BuildQuery()));
+        });
     }
 
     partial void OnSelectedPageChanged(int value)
@@ -225,7 +217,7 @@ public partial class MainWindowViewModel : PageViewModel
 
     public void Refresh()
     {
-        DateText = DateTime.Now.ToString("dddd, d MMMM", CultureInfo.GetCultureInfo("ru-RU"));
+        DateText = DateTime.Now.ToString("dddd, d MMMM", LocalizationService.Current.Culture);
         Run(() =>
         {
             _changingFilters = true;
@@ -233,7 +225,7 @@ public partial class MainWindowViewModel : PageViewModel
             {
                 Guid? categoryId = FilterCategory?.Category?.Id;
                 FilterCategories.Clear();
-                FilterCategories.Add(new CategoryOption("Все категории"));
+                FilterCategories.Add(new CategoryOption("", translationKey: "Filters.AllCategories"));
                 foreach (var category in _categories.GetAll())
                 {
                     FilterCategories.Add(new CategoryOption(category.Name, category));
@@ -320,7 +312,7 @@ public partial class MainWindowViewModel : PageViewModel
     {
         if (SelectedPreset is null)
         {
-            ErrorMessage = "Выберите сохранённый фильтр.";
+            ErrorMessage = Texts.Get("Errors.SelectPreset");
             return;
         }
         if (Run(() => _presets.Delete(SelectedPreset.Id)))
@@ -402,11 +394,11 @@ public partial class MainWindowViewModel : PageViewModel
     {
         if (Run(() =>
         {
-            var task = _tasks.GetById(id) ?? throw new InvalidOperationException("Задача уже удалена.");
+            var task = _tasks.GetById(id) ?? throw new InvalidOperationException(Texts.Get("Errors.TaskDeleted"));
             change(task);
             if (!_tasks.Update(task))
             {
-                throw new InvalidOperationException("Задача уже удалена.");
+                throw new InvalidOperationException(Texts.Get("Errors.TaskDeleted"));
             }
         }))
         {

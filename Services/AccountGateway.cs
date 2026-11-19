@@ -41,7 +41,7 @@ public class NeonAccountGateway : IAccountGateway
     {
         if (string.IsNullOrWhiteSpace(NeonConfiguration.Read("CHRONIFY_DATABASE_URL")))
         {
-            throw new AccountUnavailableException("Подключение к общей базе ещё не настроено.");
+            throw new AccountUnavailableException(Texts.Get("Errors.DatabaseNotConfigured"));
         }
 
         try
@@ -51,11 +51,11 @@ public class NeonAccountGateway : IAccountGateway
         // Неправильний пароль БД або відмова реєстрації не є відсутністю інтернету.
         catch (NpgsqlException ex) when (ex is not PostgresException)
         {
-            throw new AccountUnavailableException("Общая база недоступна. Проверьте подключение к интернету.", ex);
+            throw new AccountUnavailableException(Texts.Get("Errors.DatabaseUnavailable"), ex);
         }
         catch (TimeoutException ex)
         {
-            throw new AccountUnavailableException("Общая база не ответила вовремя.", ex);
+            throw new AccountUnavailableException(Texts.Get("Errors.DatabaseTimeout"), ex);
         }
     }
 }

@@ -14,34 +14,42 @@ public record CalendarDay(
 public partial class PlanningViewModel(ITaskRepository tasks, UserPreferencesRepository preferences) : PageViewModel
 {
     private DateTime _month = new(DateTime.Today.Year, DateTime.Today.Month, 1);
+    private DayPlan? _plan;
+    private int _calendarLimit = 480;
     public ObservableCollection<TaskCard> FocusTasks { get; } = [];
     public ObservableCollection<CalendarDay> Calendar { get; } = [];
-    public IReadOnlyList<string> Weekdays { get; } =
-
+    public IReadOnlyList<string> Weekdays =>
     [
-
-        "Пн",
-
-        "Вт",
-
-        "Ср",
-
-        "Чт",
-
-        "Пт",
-
-        "Сб",
-
-        "Вс"
-
+        Texts.Get("Weekdays.Monday"),
+        Texts.Get("Weekdays.Tuesday"),
+        Texts.Get("Weekdays.Wednesday"),
+        Texts.Get("Weekdays.Thursday"),
+        Texts.Get("Weekdays.Friday"),
+        Texts.Get("Weekdays.Saturday"),
+        Texts.Get("Weekdays.Sunday")
     ];
     [ObservableProperty]
     public partial decimal? AvailableMinutes { get; set; } = 180;
     [ObservableProperty]
     public partial decimal? DailyLimit { get; set; } = 480;
-    [ObservableProperty]
-    public partial string PlanSummary { get; set; } = "Задайте время и сформируйте план.";
-    public string MonthTitle => _month.ToString("MMMM yyyy", System.Globalization.CultureInfo.GetCultureInfo("ru-RU"));
+    public string PlanSummary => _plan is null
+        ? Texts.Get("Planning.InitialSummary")
+        : Texts.Format("Planning.Summary", _plan.Tasks.Count, _plan.UsedMinutes, _plan.LimitMinutes, _plan.WithoutEstimate);
+    public string MonthTitle => _month.ToString("MMMM yyyy", LocalizationService.Current.Culture);
+
+    public override void RefreshLanguage()
+    {
+        base.RefreshLanguage();
+        if (_plan is not null)
+        {
+            FocusTasks.Clear();
+            foreach (var task in _plan.Tasks)
+            {
+                FocusTasks.Add(new TaskCard(task));
+            }
+        }
+        Run(() => LoadCalendar(_calendarLimit));
+    }
 
     public void Refresh()
     {
@@ -72,7 +80,8 @@ public partial class PlanningViewModel(ITaskRepository tasks, UserPreferencesRep
             {
                 FocusTasks.Add(new TaskCard(task));
             }
-            PlanSummary = $"В плане: {result.Tasks.Count} задач, {result.UsedMinutes} из {limit} мин. Без оценки времени: {result.WithoutEstimate}.";
+            _plan = result;
+            OnPropertyChanged(nameof(PlanSummary));
             LoadCalendar(daily);
         });
     }
@@ -107,6 +116,7 @@ public partial class PlanningViewModel(ITaskRepository tasks, UserPreferencesRep
 
     private void LoadCalendar(int limit)
     {
+        _calendarLimit = limit;
         Calendar.Clear();
         int offset = ((int)_month.DayOfWeek + 6) % 7;
         for (int i = 0; i < offset; i++)
@@ -116,7 +126,7 @@ public partial class PlanningViewModel(ITaskRepository tasks, UserPreferencesRep
 
         foreach (var day in new WorkloadService().BuildMonth(tasks.GetAll(), _month, limit))
         {
-            Calendar.Add(new CalendarDay(day.Date.Day.ToString(), $"{day.Minutes} мин · {day.TaskCount} задач",
+            Calendar.Add(new CalendarDay(day.Date.Day.ToString(), Texts.Format("Planning.DayLoad", day.Minutes, day.TaskCount),
                         day.IsOverloaded ? "#542733" : day.TaskCount > 0 ? "#203D35" : "#1C191F"));
         }
     }
@@ -125,7 +135,7 @@ public partial class PlanningViewModel(ITaskRepository tasks, UserPreferencesRep
     {
         if (value is not decimal minutes || minutes != decimal.Truncate(minutes) || minutes is < 1 or > 1440)
         {
-            throw new ArgumentException("Укажите целое число минут от 1 до 1440.");
+            throw new ArgumentException(Texts.Get("Errors.MinutesRange"));
         }
 
         return (int)minutes;

@@ -4,10 +4,16 @@ using Microsoft.Data.Sqlite;
 
 namespace Chronify.ViewModels;
 
-public partial class PageViewModel : ObservableObject
+public partial class PageViewModel : LocalizedObservableObject
 {
     [ObservableProperty]
     public partial string? ErrorMessage { get; set; }
+
+    public override void RefreshLanguage()
+    {
+        ErrorMessage = null;
+        base.RefreshLanguage();
+    }
 
     protected bool Run(Action action)
     {
@@ -21,17 +27,17 @@ public partial class PageViewModel : ObservableObject
         {
             ErrorMessage = ex switch
             {
-                DbUpdateException => "Не удалось сохранить данные. Повторите попытку.",
-                SqliteException => "Не удалось прочитать базу данных. Проверьте доступ к файлу программы.",
+                DbUpdateException => Texts.Get("Errors.DataSave"),
+                SqliteException => Texts.Get("Errors.DatabaseRead"),
                 ModelValidationException model => model.Error switch
                 {
-                    ModelError.CategoryNameTaken => "Такая категория уже существует.",
-                    ModelError.CategoryNameRequired => "Введите название категории.",
-                    ModelError.CategoryColorRequired => "Выберите цвет категории.",
-                    ModelError.TaskCompleted => "Завершённую задачу нельзя изменить.",
-                    ModelError.TaskTitleRequired => "Введите название задачи.",
-                    ModelError.DueDateInPast => "Дедлайн не может быть в прошлом.",
-                    _ => "Проверьте введённые данные."
+                    ModelError.CategoryNameTaken => Texts.Get("Errors.CategoryExists"),
+                    ModelError.CategoryNameRequired => Texts.Get("Errors.CategoryName"),
+                    ModelError.CategoryColorRequired => Texts.Get("Errors.CategoryColor"),
+                    ModelError.TaskCompleted => Texts.Get("Errors.TaskCompleted"),
+                    ModelError.TaskTitleRequired => Texts.Get("Errors.TaskTitle"),
+                    ModelError.DueDateInPast => Texts.Get("Errors.PastDueDate"),
+                    _ => Texts.Get("Errors.Input")
                 },
                 _ => ex.Message
             };

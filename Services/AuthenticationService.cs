@@ -13,7 +13,24 @@ public class AuthenticationService
     private readonly IAccountGateway _accounts;
     private string? _currentToken;
     private Guid? _currentUserId;
-    public string? SessionNotice { get; private set; }
+    private bool _offline;
+    private bool _sessionNotSaved;
+    public string? SessionNotice
+    {
+        get
+        {
+            var messages = new List<string>();
+            if (_sessionNotSaved)
+            {
+                messages.Add(Texts.Get("Account.SessionNotSaved"));
+            }
+            if (_offline)
+            {
+                messages.Add(Texts.Get("Account.OfflineNotice"));
+            }
+            return messages.Count == 0 ? null : string.Join(" ", messages);
+        }
+    }
 
     public AuthenticationService(
         ISessionTokenStore tokenStore,
@@ -52,25 +69,25 @@ public class AuthenticationService
         email = email.Trim();
         if (name.Length is < 1 or > 80)
         {
-            throw new ArgumentException("Ім'я: від 1 до 80 символів.");
+            throw new ArgumentException(Texts.Get("Errors.DisplayName"));
         }
 
         if (!MailAddress.TryCreate(email, out var address) || address.Address != email || email.Length > 200)
         {
-            throw new ArgumentException("Введіть коректну електронну адресу.");
+            throw new ArgumentException(Texts.Get("Errors.Email"));
         }
 
         var credentials = PasswordHasher.Create(password);
         if (Encoding.UTF8.GetByteCount(password) > 72)
         {
-            throw new ArgumentException("Пароль не должен превышать 72 байта UTF-8.");
+            throw new ArgumentException(Texts.Get("Errors.PasswordBytes"));
         }
 
         using (var context = _createContext())
         {
             if (context.Users.Any(u => u.NormalizedEmail == email.ToUpperInvariant()))
             {
-                throw new InvalidOperationException("Аккаунт уже существует. Используйте обычный вход.");
+                throw new InvalidOperationException(Texts.Get("Errors.AccountExists"));
             }
         }
         // Спочатку загальна БД. Без мережі не створюємо акаунт лише на цьому ПК.
@@ -82,7 +99,7 @@ public class AuthenticationService
         catch (AccountUnavailableException ex)
         {
             throw new InvalidOperationException(
-              "Для регистрации нужен интернет: аккаунт создаётся в общей и локальной БД.",
+              Texts.Get("Errors.RegistrationOnline"),
               ex
           );
         }
@@ -132,16 +149,16 @@ public class AuthenticationService
         {
             if (!localPasswordValid)
             {
-                throw new InvalidOperationException("Нет связи с общей базой. Для первого входа нужен интернет; для сохранённого аккаунта проверьте пароль.");
+                throw new InvalidOperationException(Texts.Get("Errors.FirstLoginOnline"));
             }
 
             StartSession(local!, remember);
-            SessionNotice = (SessionNotice is null ? "" : SessionNotice + " ") + "Вход без интернета. Сохранённые задачи доступны; группы обновятся при подключении.";
+            _offline = true;
             return local!;
         }
         if (local is not null && binding is null && !localPasswordValid)
         {
-            throw new InvalidOperationException("Пароль общей учётной записи не совпадает с паролем старых локальных данных. Автоматическая привязка отменена.");
+            throw new InvalidOperationException(Texts.Get("Errors.LegacyPassword"));
         }
 
         var credentials = PasswordHasher.Create(password);
@@ -178,7 +195,7 @@ public class AuthenticationService
             && (binding.RemoteUserId != session.UserId
             || binding.Address != _accounts.Workspace))
         {
-            throw new InvalidOperationException("Локальные данные уже связаны с другой учётной записью или базой.");
+            throw new InvalidOperationException(Texts.Get("Errors.AccountBinding"));
         }
 
         bool firstAccount = !context.Users.Any();
@@ -289,7 +306,7 @@ public class AuthenticationService
         name = name.Trim();
         if (name.Length is < 1 or > 80)
         {
-            throw new ArgumentException("Ім'я: від 1 до 80 символів.");
+            throw new ArgumentException(Texts.Get("Errors.DisplayName"));
         }
 
         using var context = _createContext();
@@ -313,7 +330,8 @@ public class AuthenticationService
         context.SaveChanges();
         _currentToken = token;
         _currentUserId = user.Id;
-        SessionNotice = null;
+        _offline = false;
+        _sessionNotSaved = false;
         try
         {
             if (remember)
@@ -328,7 +346,7 @@ public class AuthenticationService
         catch (Exception ex) when (ex is CryptographicException or IOException or UnauthorizedAccessException or PlatformNotSupportedException)
         {
             // Вхід залишається дійсним у пам'яті, навіть якщо ОС не дозволила зберегти токен.
-            SessionNotice = "Сессия не сохранена на компьютере. При следующем запуске войдите снова.";
+            _sessionNotSaved = true;
         }
     }
 

@@ -60,7 +60,7 @@ public static class ExternalHttp
         using var response = await Http.SendAsync(request, cancellation);
         if (!response.IsSuccessStatusCode)
         {
-            throw new InvalidOperationException($"{(notion ? "Notion" : "Classroom")}: ошибка {(int)response.StatusCode}. Проверьте подключение и доступ к курсу/таблице. При 429 повторите позже.");
+            throw new InvalidOperationException(Texts.Format("Errors.ImportHttp", (notion ? "Notion" : "Classroom"), (int)response.StatusCode));
         }
 
         using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync(cancellation));
@@ -100,7 +100,7 @@ public class TaskImportService(Guid userId, Func<AppDbContext>? createContext = 
                     prepared.Add(item with { Description = await provider.Description(item, cancellation) });
                     if (prepared.Sum(t => t.Attachments.Sum(a => (long)a.Content.Length)) > 100 * 1024 * 1024)
                     {
-                        throw new InvalidOperationException("За один импорт можно сохранить не более 100 МБ вложений. Выберите меньше задач.");
+                        throw new InvalidOperationException(Texts.Get("Errors.ImportTotalSize"));
                     }
                 }
             }
@@ -125,7 +125,7 @@ public class TaskImportService(Guid userId, Func<AppDbContext>? createContext = 
                 category = new Category(item.Category, "#F34F78") { UserId = userId };
                 context.Categories.Add(category);
             }
-            string description = item.Description + (item.Url.Length > 0 ? "\n\nИсточник: " + item.Url : "");
+            string description = item.Description + (item.Url.Length > 0 ? Texts.Get("Import.SourceSuffix") + item.Url : "");
             var task = TaskItem.FromImport(
                 item.Title,
                 description.Trim(),
